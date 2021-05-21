@@ -10,8 +10,6 @@ Backend for Treasure Hunt
 2. Navigate to a local directory, and run ```git clone <url-of-fork>``` to clone forked repo to your local machine
 3. Run ```git remote add upstream https://github.com/lichengrao/treasure-hunt-backend.git``` to add remote
    
----
-
 ## Workflow
 
 [CLICK HERE FOR VIDEO TUTORIAL](https://drive.google.com/file/d/1wPRpMebpRpLdm6gOGmakLly4FFqpCrJI/view?usp=sharing)
