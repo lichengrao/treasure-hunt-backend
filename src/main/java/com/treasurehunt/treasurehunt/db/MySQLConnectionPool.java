@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class MySQLConnectionPool {
+class MySQLConnectionPool {
     private static final String CLOUD_SQL_CONNECTION_NAME = "treasure-hunt-314706:us-central1:treasure-hunt-mysql" +
             "-instance";
     private static final String DB_NAME = "treasure_hunt";
@@ -33,6 +33,7 @@ public class MySQLConnectionPool {
 
         config.addDataSourceProperty("socketFactory", "com.google.cloud.sql.mysql.SocketFactory");
         config.addDataSourceProperty("cloudSqlInstance", CLOUD_SQL_CONNECTION_NAME);
+        config.setDriverClassName("com.mysql.cj.jdbc.Driver");
 
         // Specify a comma delimited list of preferred IP types for connecting to instance
         config.addDataSourceProperty("ipTypes", "PUBLIC,PRIVATE");
