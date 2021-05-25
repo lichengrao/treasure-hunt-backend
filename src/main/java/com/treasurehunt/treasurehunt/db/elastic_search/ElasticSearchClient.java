@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-class ElasticSearchClient {
+public class ElasticSearchClient {
     private static final String ELASTIC_SEARCH_ENDPOINT = "34.70.120.75";
     public final RestHighLevelClient client;
 
