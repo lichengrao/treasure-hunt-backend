@@ -65,6 +65,8 @@ public class MySQLTableCreator {
                         + "FOREIGN KEY (listing_id) REFERENCES listings(listing_id)"
                         + ")";
                 statement.executeUpdate(sql);
+
+                System.out.println("Tables Successfully Created");
             }
         } catch (Exception e) {
             e.printStackTrace();
