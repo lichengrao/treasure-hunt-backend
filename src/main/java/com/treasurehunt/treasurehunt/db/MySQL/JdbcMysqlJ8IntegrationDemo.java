@@ -1,4 +1,4 @@
-package com.treasurehunt.treasurehunt.db;
+package com.treasurehunt.treasurehunt.db.MySQL;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;

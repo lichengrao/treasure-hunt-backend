@@ -1,4 +1,4 @@
-package com.treasurehunt.treasurehunt.db;
+package com.treasurehunt.treasurehunt.db.MySQL;
 
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -12,8 +12,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-@WebListener("Creates a connection pool that is stored in the Servlet's context for later use")
-public class ConnectionPoolContextListener implements ServletContextListener {
+@WebListener("Creates a connection pool that is stored in the Servlet's context for later use via attribute mysql-pool")
+public class MySQLConnectionPoolContextListener implements ServletContextListener {
 
     private void createTable(DataSource pool) throws SQLException {
         // Safely attempt to create the table schema.
@@ -35,7 +35,7 @@ public class ConnectionPoolContextListener implements ServletContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent event) {
-        HikariDataSource pool = (HikariDataSource) event.getServletContext().getAttribute("my-pool");
+        HikariDataSource pool = (HikariDataSource) event.getServletContext().getAttribute("mysql-pool");
         if (pool != null) {
             pool.close();
         }
@@ -44,12 +44,12 @@ public class ConnectionPoolContextListener implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent event) {
         ServletContext servletContext = event.getServletContext();
-        DataSource pool = (DataSource) servletContext.getAttribute("my-pool");
+        DataSource pool = (DataSource) servletContext.getAttribute("mysql-pool");
         if (pool == null) {
             try {
                 MySQLConnectionPool mySQLConnectionPool = new MySQLConnectionPool();
                 pool = mySQLConnectionPool.pool;
-                servletContext.setAttribute("my-pool", pool);
+                servletContext.setAttribute("mysql-pool", pool);
             } catch (IOException ex) {
                 throw new RuntimeException("Unable to fetch MySQL login credentials");
             }

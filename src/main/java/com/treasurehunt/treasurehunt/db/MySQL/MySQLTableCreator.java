@@ -1,4 +1,4 @@
-package com.treasurehunt.treasurehunt.db;
+package com.treasurehunt.treasurehunt.db.MySQL;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
