@@ -14,9 +14,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class ElasticSearchClient {
+class ElasticSearchClient {
     private static final String ELASTIC_SEARCH_ENDPOINT = "34.70.120.75";
-    private final RestHighLevelClient client;
+    public final RestHighLevelClient client;
 
     public ElasticSearchClient() throws IOException {
         // Get username and password from properties
@@ -27,8 +27,8 @@ public class ElasticSearchClient {
                 ElasticSearchClient.class.getClassLoader().getResourceAsStream(propFileName);
         prop.load(inputStream);
 
-        String es_user = prop.getProperty("sql_user");
-        String es_password = prop.getProperty("sql_password");
+        String es_user = prop.getProperty("es_user");
+        String es_password = prop.getProperty("es_password");
 
         // Setup login credentials
         final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
