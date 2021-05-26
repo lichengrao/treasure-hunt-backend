@@ -18,7 +18,7 @@ class ElasticsearchClient {
     private static final String ELASTIC_SEARCH_ENDPOINT = "34.70.120.75";
     public final RestHighLevelClient client;
 
-    public ElasticsearchClient() throws IOException {
+    ElasticsearchClient() throws IOException {
         // Get username and password from properties
         Properties prop = new Properties();
         String propFileName = "config.properties";
