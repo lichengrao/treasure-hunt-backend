@@ -27,7 +27,7 @@ public class MySQLConnectionPoolContextListener implements ServletContextListene
                     + "address VARCHAR(255), "
                     + "PRIMARY KEY (user_id) "
                     + ")";
-            try (PreparedStatement createTableStatement = conn.prepareStatement(stmt);) {
+            try (PreparedStatement createTableStatement = conn.prepareStatement(stmt)) {
                 createTableStatement.execute();
             }
         }
@@ -54,6 +54,8 @@ public class MySQLConnectionPoolContextListener implements ServletContextListene
                 throw new RuntimeException("Unable to fetch MySQL login credentials");
             }
         }
+
+        // Test MySQL connection
         try {
             createTable(pool);
             System.out.println("Successfully created connection to MySQL");

@@ -10,11 +10,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ElasticSearchIntegrationDemo {
+public class ElasticsearchIntegrationDemo {
     public static void main(String[] args) {
         try {
-            ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
-            try (RestHighLevelClient client = elasticSearchClient.client) {
+            ElasticsearchClient elasticsearchClient = new ElasticsearchClient();
+            try (RestHighLevelClient client = elasticsearchClient.client) {
 
                 // Indexing
                 Map<String, Object> jsonMap = new HashMap<>();

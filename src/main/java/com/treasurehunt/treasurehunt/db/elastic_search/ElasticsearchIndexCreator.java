@@ -7,13 +7,13 @@ import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 
-public class ElasticSearchIndexCreator {
+public class ElasticsearchIndexCreator {
     public static void main(String[] args) {
         try {
-            // Connect to ElasticSearch
-            System.out.println("Connecting to ElasticSearch");
-            ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
-            try (RestHighLevelClient client = elasticSearchClient.client) {
+            // Connect to Elasticsearch
+            System.out.println("Connecting to Elasticsearch");
+            ElasticsearchClient elasticsearchClient = new ElasticsearchClient();
+            try (RestHighLevelClient client = elasticsearchClient.client) {
                 // Create Index Request
                 CreateIndexRequest request = new CreateIndexRequest("listings");
 
@@ -89,7 +89,7 @@ public class ElasticSearchIndexCreator {
                         builder.endObject();
 
                         // picture_urls
-                        // ElasticSearch arrays do not require a dedicated field data type.
+                        // Elasticsearch arrays do not require a dedicated field data type.
                         // Any field can contain zero or more values by default
                         builder.startObject("picture_urls");
                         {
