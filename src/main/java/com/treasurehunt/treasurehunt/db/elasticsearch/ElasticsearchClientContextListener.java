@@ -1,4 +1,4 @@
-package com.treasurehunt.treasurehunt.db.elastic_search;
+package com.treasurehunt.treasurehunt.db.elasticsearch;
 
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.get.GetRequest;

@@ -1,4 +1,4 @@
-package com.treasurehunt.treasurehunt.db.elastic_search;
+package com.treasurehunt.treasurehunt.db.elasticsearch;
 
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
