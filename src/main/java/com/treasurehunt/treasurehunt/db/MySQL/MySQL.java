@@ -108,7 +108,7 @@ public class MySQL {
     }
 
     // Create a saved record in saved_records
-    public void saveListing(DataSource pool, String userId, String listingId) throws MySQLException {
+    public static void saveListing(DataSource pool, String userId, String listingId) throws MySQLException {
         // Create a connection from the given pool
         try (Connection conn = pool.getConnection()) {
             // Build and execute SQL statement
@@ -123,7 +123,7 @@ public class MySQL {
     }
 
     // Delete a saved record in saved_records
-    public void unsaveListing(DataSource pool, String userId, String listingId) throws MySQLException {
+    public static void unsaveListing(DataSource pool, String userId, String listingId) throws MySQLException {
         // Create a connection from the given pool
         try (Connection conn = pool.getConnection()) {
             // Build and execute SQL statement
