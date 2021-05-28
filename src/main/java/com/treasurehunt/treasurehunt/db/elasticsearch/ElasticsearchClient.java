@@ -16,9 +16,8 @@ import java.util.Properties;
 
 class ElasticsearchClient {
     private static final String ELASTIC_SEARCH_ENDPOINT = "34.70.120.75";
-    public final RestHighLevelClient client;
 
-    ElasticsearchClient() throws IOException {
+    static RestHighLevelClient createElasticsearchClient() throws IOException {
         // Get username and password from properties
         Properties prop = new Properties();
         String propFileName = "config.properties";
@@ -45,7 +44,7 @@ class ElasticsearchClient {
                     }
                 });
 
-        // Setup Elasticsearch High Level REST client
-        client = new RestHighLevelClient(builder);
+        // Return new Elasticsearch High Level REST client
+        return new RestHighLevelClient(builder);
     }
 }

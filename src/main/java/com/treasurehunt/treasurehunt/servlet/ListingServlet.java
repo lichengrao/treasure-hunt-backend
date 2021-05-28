@@ -33,7 +33,7 @@ public class ListingServlet extends HttpServlet {
         String fileName = filePart.getSubmittedFileName();
         InputStream fileInputStream = filePart.getInputStream();
 
-        String url = GCS.upload(storage, fileName, fileInputStream);
+        String url = GCS.uploadPicture(storage, fileName, fileInputStream);
         response.getWriter().print(url);
         System.out.print("Success");
     }
