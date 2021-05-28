@@ -1,11 +1,19 @@
 package com.treasurehunt.treasurehunt.db.elasticsearch;
 
+import com.treasurehunt.treasurehunt.entity.Listing;
 import com.treasurehunt.treasurehunt.entity.SearchListingsRequestBody;
-import com.treasurehunt.treasurehunt.entity.SearchListingsResponseBody;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Elasticsearch {
 
@@ -38,22 +46,76 @@ public class Elasticsearch {
         }
     }
 
-    public static SearchListingsResponseBody getSearchResults(RestHighLevelClient client,
-                                                              SearchListingsRequestBody requestBody) throws ElasticsearchException {
+    // Search the listings index and return a list of listings
+    public static List<Listing> getSearchResults(RestHighLevelClient client,
+                                                 SearchListingsRequestBody requestBody) throws ElasticsearchException {
 
         try {
             // Get raw response from Elasicsearch
             String rawSearchResults = getRawSearchResults(client, buildListingsSearchRequest(requestBody));
 
-            // Create the responseBody object from the raw response
+            // Create list of search results
+            List<Listing> listingsSearchResults = new ArrayList<>();
+
+            // Add results to listingsSearchResults
             // TODO
-            SearchListingsResponseBody responseBody = new SearchListingsResponseBody();
 
             // Return the responseBody
-            return responseBody;
+            return listingsSearchResults;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new ElasticsearchException("Unable to parse results sent from Elasticsearch");
+            throw new ElasticsearchException("Unable to parse search results sent from Elasticsearch");
+        }
+    }
+
+    // Add listing to the listings index
+    public static void addListing(RestHighLevelClient client, Listing listing) throws ElasticsearchException {
+        try {
+            // Create index request
+            IndexRequest request = new IndexRequest(LISTINGS_INDEX);
+            // create jsonMap for the listing object
+            // TODO
+            Map<String, Object> jsonMap = new HashMap<>();
+            request.id("INSERT_DOCUMENT_ID_HERE").source(jsonMap);
+
+            // Execute the request
+            client.index(request, RequestOptions.DEFAULT);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ElasticsearchException("Failed to create Listing");
+        }
+    }
+
+    // Update existing listing in the listings index
+    public static void updateListing(RestHighLevelClient client, Listing listing) throws ElasticsearchException {
+        try {
+            // Create update request
+            UpdateRequest request = new UpdateRequest(LISTINGS_INDEX, "INSERT_DOCUMENT_ID_HERE");
+
+            // create jsonMap for the updated listing object
+            // TODO
+            Map<String, Object> jsonMap = new HashMap<>();
+            request.doc(jsonMap);
+
+            // Execute the request
+            client.update(request, RequestOptions.DEFAULT);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ElasticsearchException("Failed to update Listing");
+        }
+    }
+
+    // Delete existing listing from the listings index
+    public static void deleteListing(RestHighLevelClient client, Listing listing) throws ElasticsearchException {
+        try {
+            // Create delete request
+            DeleteRequest request = new DeleteRequest(LISTINGS_INDEX, "INSERT_DOCUMENT_ID_HERE");
+
+            // Execute the request
+            client.delete(request, RequestOptions.DEFAULT);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ElasticsearchException("Failed to delete Listing");
         }
     }
 }
