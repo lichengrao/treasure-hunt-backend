@@ -26,6 +26,7 @@ public class GCSClientContextListener implements ServletContextListener {
         if (storage == null) {
             storage = createGCSClient();
             servletContext.setAttribute("gcs-client", storage);
+            System.out.println("Successfully created connection to GCS");
         }
     }
 }
