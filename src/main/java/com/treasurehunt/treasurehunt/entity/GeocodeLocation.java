@@ -16,17 +16,17 @@ public class GeocodeLocation {
     @JsonProperty("lon")
     private final double longitude;
 
+    private GeocodeLocation(Builder builder) {
+        this.latitude = builder.latitude;
+        this.longitude = builder.longitude;
+    }
+
     public double getLatitude() {
         return latitude;
     }
 
     public double getLongitude() {
         return longitude;
-    }
-
-    private GeocodeLocation(Builder builder) {
-        this.latitude = builder.latitude;
-        this.longitude = builder.longitude;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
