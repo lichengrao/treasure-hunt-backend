@@ -2,6 +2,7 @@ package com.treasurehunt.treasurehunt.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.treasurehunt.treasurehunt.db.GCS;
+import com.treasurehunt.treasurehunt.db.MySQL.MySQL;
 import com.treasurehunt.treasurehunt.db.MySQL.MySQLConnectionPoolContextListener;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import org.json.JSONObject;
@@ -72,7 +73,7 @@ public class ListingServlet extends HttpServlet {
         try (Connection conn = pool.getConnection()) {
 
             // Get fullName and address from userDB, and add these info to builder
-            String[] queryResult = MySQLConnectionPoolContextListener.getSellerNameAddress(conn, sellerID);
+            String[] queryResult = MySQL.getSellerNameAddress(conn, sellerID);
             String fullName = queryResult[0] + " " + queryResult[1];
             String address = queryResult[2];
 
@@ -83,7 +84,7 @@ public class ListingServlet extends HttpServlet {
             Listing listing = builder.build();
 
             // Add these info to MySQL database
-            MySQLConnectionPoolContextListener.createNewListing(conn, listing);
+            MySQL.createListing(conn, listing);
 
         } catch (SQLException ex) {
             response.setStatus(500);
@@ -109,7 +110,7 @@ public class ListingServlet extends HttpServlet {
         DataSource pool = (DataSource) request.getServletContext().getAttribute("my-pool");
 
         try (Connection conn = pool.getConnection()) {
-            listing = MySQLConnectionPoolContextListener.getListing(conn, listingID);
+            listing = MySQL.getListing(conn, listingID);
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
