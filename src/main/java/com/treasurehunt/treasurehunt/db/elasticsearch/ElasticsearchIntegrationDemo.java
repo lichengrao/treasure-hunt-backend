@@ -1,4 +1,4 @@
-package com.treasurehunt.treasurehunt.db.elastic_search;
+package com.treasurehunt.treasurehunt.db.elasticsearch;
 
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
@@ -10,11 +10,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ElasticSearchIntegrationDemo {
+public class ElasticsearchIntegrationDemo {
     public static void main(String[] args) {
         try {
-            ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
-            try (RestHighLevelClient client = elasticSearchClient.client) {
+            // Start a client in try-with-resources so client will auto-close after execution
+            try (RestHighLevelClient client = ElasticsearchClient.createElasticsearchClient()) {
 
                 // Indexing
                 Map<String, Object> jsonMap = new HashMap<>();

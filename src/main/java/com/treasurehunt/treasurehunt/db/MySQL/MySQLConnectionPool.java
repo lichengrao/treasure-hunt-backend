@@ -8,13 +8,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-//
 class MySQLConnectionPool {
     private static final String CLOUD_SQL_CONNECTION_NAME = "treasurehunt-314717:us-central1:listingdbtest";
     private static final String DB_NAME = "listingtest";
     public final DataSource pool;
 
-    public MySQLConnectionPool() throws IOException {
+    MySQLConnectionPool() throws IOException {
         Properties prop = new Properties();
         String propFileName = "config.properties";
 

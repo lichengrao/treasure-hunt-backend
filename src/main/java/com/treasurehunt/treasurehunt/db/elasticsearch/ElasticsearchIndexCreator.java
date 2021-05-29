@@ -1,4 +1,4 @@
-package com.treasurehunt.treasurehunt.db.elastic_search;
+package com.treasurehunt.treasurehunt.db.elasticsearch;
 
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -7,13 +7,12 @@ import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 
-public class ElasticSearchIndexCreator {
+public class ElasticsearchIndexCreator {
     public static void main(String[] args) {
         try {
-            // Connect to ElasticSearch
-            System.out.println("Connecting to ElasticSearch");
-            ElasticSearchClient elasticSearchClient = new ElasticSearchClient();
-            try (RestHighLevelClient client = elasticSearchClient.client) {
+            // Connect to Elasticsearch
+            System.out.println("Connecting to Elasticsearch");
+            try (RestHighLevelClient client = ElasticsearchClient.createElasticsearchClient()) {
                 // Create Index Request
                 CreateIndexRequest request = new CreateIndexRequest("listings");
 
@@ -89,7 +88,7 @@ public class ElasticSearchIndexCreator {
                         builder.endObject();
 
                         // picture_urls
-                        // ElasticSearch arrays do not require a dedicated field data type.
+                        // Elasticsearch arrays do not require a dedicated field data type.
                         // Any field can contain zero or more values by default
                         builder.startObject("picture_urls");
                         {

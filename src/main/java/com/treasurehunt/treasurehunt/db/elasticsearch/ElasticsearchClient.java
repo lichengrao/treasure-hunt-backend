@@ -1,4 +1,4 @@
-package com.treasurehunt.treasurehunt.db.elastic_search;
+package com.treasurehunt.treasurehunt.db.elasticsearch;
 
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -14,17 +14,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class ElasticSearchClient {
+class ElasticsearchClient {
     private static final String ELASTIC_SEARCH_ENDPOINT = "34.70.120.75";
-    public final RestHighLevelClient client;
 
-    public ElasticSearchClient() throws IOException {
+    static RestHighLevelClient createElasticsearchClient() throws IOException {
         // Get username and password from properties
         Properties prop = new Properties();
         String propFileName = "config.properties";
 
         InputStream inputStream =
-                ElasticSearchClient.class.getClassLoader().getResourceAsStream(propFileName);
+                ElasticsearchClient.class.getClassLoader().getResourceAsStream(propFileName);
         prop.load(inputStream);
 
         String es_user = prop.getProperty("es_user");
@@ -35,7 +34,7 @@ public class ElasticSearchClient {
         credentialsProvider.setCredentials(AuthScope.ANY,
                 new UsernamePasswordCredentials(es_user, es_password));
 
-        // Setup ElasticSearch Low Level REST client
+        // Setup Elasticsearch Low Level REST client
         RestClientBuilder builder = RestClient.builder(
                 new HttpHost(ELASTIC_SEARCH_ENDPOINT, 9200))
                 .setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
@@ -45,8 +44,7 @@ public class ElasticSearchClient {
                     }
                 });
 
-        // Setup ElasticSearch High Level REST client
-        client = new RestHighLevelClient(builder);
-
+        // Return new Elasticsearch High Level REST client
+        return new RestHighLevelClient(builder);
     }
 }
