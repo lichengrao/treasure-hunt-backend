@@ -7,7 +7,6 @@ import com.treasurehunt.treasurehunt.db.MySQL.MySQL;
 import com.treasurehunt.treasurehunt.db.MySQL.MySQLConnectionPoolContextListener;
 import com.treasurehunt.treasurehunt.db.gcs.GCSClientContextListener;
 
-
 import com.treasurehunt.treasurehunt.entity.Listing;
 import org.json.JSONObject;
 
@@ -72,7 +71,7 @@ public class ListingServlet extends HttpServlet {
                 .setDescription(request.getParameter("description"))
                 .setItemCondition(request.getParameter("condition"))
                 .setBrand(request.getParameter("brand"))
-                .setPictureUrls(pictureArray);
+                .setPictureUrls(pictureArray.toString());
 
         // Connect to MySQL
         DataSource pool = (DataSource) request.getServletContext().getAttribute("mysql-pool");
@@ -111,10 +110,10 @@ public class ListingServlet extends HttpServlet {
             IOException {
 
         String listingID = request.getParameter("listing_id");
-//        JSONObject listing = new JSONObject();
-        Listing listing = null;
 
-        DataSource pool = (DataSource) request.getServletContext().getAttribute("my-pool");
+        Listing listing = new Listing();
+
+        DataSource pool = (DataSource) request.getServletContext().getAttribute("mysql-pool");
 
         try (Connection conn = pool.getConnection()) {
             listing = MySQL.getListing(conn, listingID);
@@ -122,7 +121,6 @@ public class ListingServlet extends HttpServlet {
             throwables.printStackTrace();
         }
 
-        // Return JSONObject as response
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().print(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(listing));
     }

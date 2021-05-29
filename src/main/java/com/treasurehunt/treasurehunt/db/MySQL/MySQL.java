@@ -1,5 +1,6 @@
 package com.treasurehunt.treasurehunt.db.MySQL;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.treasurehunt.treasurehunt.db.MySQL.MySQLException;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import com.treasurehunt.treasurehunt.entity.User;
@@ -47,7 +48,7 @@ public class MySQL {
                 postListing.setString(5, listing.getDescription());
                 postListing.setString(6, listing.getItemCondition());
                 postListing.setString(7, listing.getBrand());
-                postListing.setObject(8, listing.getPictureUrls());
+                postListing.setString(8, listing.getPictureUrls());
                 postListing.setString(9, listing.getSellerId());
                 postListing.setString(10, listing.getSellerName());
                 postListing.setString(11, listing.getAddress());
@@ -170,7 +171,7 @@ public class MySQL {
 
         String[] result = new String[3];
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
-            statement.setString(1,SellerID);
+            statement.setString(1, SellerID);
             ResultSet rs = statement.executeQuery();
 
             if (rs.next()) {
@@ -185,28 +186,15 @@ public class MySQL {
 
     public static Listing getListing(Connection conn, String listingID) throws SQLException {
 
-//        JSONObject listing = new JSONObject();
-        Listing listing = null;
+        Listing listing = new Listing();
 
         String sql = "SELECT * FROM listings WHERE listing_id = ?";
 
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
-            statement.setString(1,listingID);
+            statement.setString(1, listingID);
             ResultSet rs = statement.executeQuery();
 
             if (rs.next()) {
-//                listing.put("listingID",rs.getString("listing_id"));
-//                listing.put("title",rs.getString("title"));
-//                listing.put("price",rs.getString("price"));
-//                listing.put("category",rs.getString("category"));
-//                listing.put("description",rs.getString("description"));
-//                listing.put("itemCondition",rs.getString("item_condition"));
-//                listing.put("brand",rs.getString("brand"));
-//                listing.put("pictureUrls",rs.getString("picture_urls"));
-//                listing.put("sellerId",rs.getString("seller_id"));
-//                listing.put("sellerName",rs.getString("seller_name"));
-//                listing.put("address",rs.getString("address"));
-//                listing.put("date",rs.getString("date"));
 
                 Listing.Builder builder = new Listing.Builder();
                 builder.setListingId(listingID)
@@ -216,7 +204,7 @@ public class MySQL {
                         .setDescription(rs.getString("description"))
                         .setItemCondition(rs.getString("item_condition"))
                         .setBrand(rs.getString("brand"))
-                        .setPictureUrls((JSONObject) rs.getObject("picture_urls"))
+                        .setPictureUrls(rs.getString("picture_urls"))
                         .setSellerId(rs.getString("seller_id"))
                         .setSellerName(rs.getString("seller_name"))
                         .setAddress(rs.getString("address"))
