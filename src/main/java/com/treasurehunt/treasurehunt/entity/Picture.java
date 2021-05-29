@@ -1,4 +1,4 @@
-package com.treasurehunt.entity;
+package com.treasurehunt.treasurehunt.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;

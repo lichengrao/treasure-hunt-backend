@@ -1,4 +1,4 @@
-package com.treasurehunt.treasurehunt.db.mysql;
+package com.treasurehunt.treasurehunt.db.MySQL;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -10,9 +10,8 @@ import java.util.Properties;
 
 //
 class MySQLConnectionPool {
-    private static final String CLOUD_SQL_CONNECTION_NAME = "treasure-hunt-314706:us-central1:treasure-hunt-mysql" +
-            "-instance";
-    private static final String DB_NAME = "treasure_hunt";
+    private static final String CLOUD_SQL_CONNECTION_NAME = "treasurehunt-314717:us-central1:listingdbtest";
+    private static final String DB_NAME = "listingtest";
     public final DataSource pool;
 
     public MySQLConnectionPool() throws IOException {
