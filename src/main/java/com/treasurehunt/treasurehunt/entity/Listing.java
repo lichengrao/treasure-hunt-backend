@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.json.JSONObject;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -38,6 +37,24 @@ public class Listing {
     private String pictureUrls;
     @JsonProperty("date")
     private String date;
+
+    public Listing(Builder builder) {
+        this.listingId = builder.listingId;
+        this.title = builder.title;
+        this.price = builder.price;
+        this.category = builder.category;
+        this.sellerId = builder.sellerId;
+        this.sellerName = builder.sellerName;
+        this.description = builder.description;
+        this.itemCondition = builder.itemCondition;
+        this.address = builder.address;
+        this.brand = builder.brand;
+        this.pictureUrls = builder.pictureUrls;
+        this.date = builder.date;
+    }
+
+    public Listing() {
+    }
 
     public String getListingId() {
         return listingId;
@@ -85,24 +102,6 @@ public class Listing {
 
     public String getDate() {
         return date;
-    }
-
-    public Listing(Builder builder) {
-        this.listingId = builder.listingId;
-        this.title = builder.title;
-        this.price = builder.price;
-        this.category = builder.category;
-        this.sellerId = builder.sellerId;
-        this.sellerName = builder.sellerName;
-        this.description = builder.description;
-        this.itemCondition = builder.itemCondition;
-        this.address = builder.address;
-        this.brand = builder.brand;
-        this.pictureUrls = builder.pictureUrls;
-        this.date = builder.date;
-    }
-
-    public Listing() {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

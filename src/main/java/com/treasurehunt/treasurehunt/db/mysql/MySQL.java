@@ -160,6 +160,8 @@ public class MySQL {
         }
     }
 
+    // Need to change this to getUser
+    // TODO
     public static String[] getSellerNameAddress(DataSource pool, String SellerID) throws MySQLException {
 
         // Hardcoded, Change later

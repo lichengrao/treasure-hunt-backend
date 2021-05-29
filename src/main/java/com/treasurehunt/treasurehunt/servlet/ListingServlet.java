@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.storage.Storage;
 import com.treasurehunt.treasurehunt.db.gcs.GCS;
 import com.treasurehunt.treasurehunt.db.mysql.MySQL;
-
+import com.treasurehunt.treasurehunt.db.mysql.MySQLException;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import org.json.JSONObject;
 
@@ -18,8 +18,6 @@ import javax.servlet.http.Part;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.SQLException;
 
 @MultipartConfig
 @WebServlet(name = "ListingServlet", urlPatterns = {"/listing"})
@@ -52,7 +50,7 @@ public class ListingServlet extends HttpServlet {
                 picture.put("name", fileName);
                 picture.put("url", url);
 
-                pictureArray.put(nameList[i],picture);
+                pictureArray.put(nameList[i], picture);
             }
         }
 
@@ -100,13 +98,14 @@ public class ListingServlet extends HttpServlet {
             IOException {
 
         String listingId = request.getParameter("listing_id");
-        Listing listing = new Listing();
+        Listing listing;
 
         DataSource pool = (DataSource) request.getServletContext().getAttribute("mysql-pool");
-        try (Connection conn = pool.getConnection()) {
+        try {
             listing = MySQL.getListing(pool, listingId);
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (MySQLException e) {
+            e.printStackTrace();
+            throw new ServletException("Cannot get listings");
         }
 
         response.setContentType("application/json;charset=UTF-8");

@@ -17,18 +17,18 @@ public class Picture {
     @JsonRawValue
     private String url;
 
+    public Picture(Picture.Builder builder) {
+        this.name = builder.name;
+        this.url = builder.url;
+
+    }
+
     public String getName() {
         return name;
     }
 
     public String getUrl() {
         return url;
-    }
-
-    public Picture(Picture.Builder builder) {
-        this.name = builder.name;
-        this.url = builder.url;
-
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
