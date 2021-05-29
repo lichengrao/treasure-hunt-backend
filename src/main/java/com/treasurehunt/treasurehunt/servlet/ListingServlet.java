@@ -1,9 +1,13 @@
 package com.treasurehunt.treasurehunt.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.treasurehunt.treasurehunt.db.GCS;
+import com.google.cloud.storage.Storage;
+import com.treasurehunt.treasurehunt.db.gcs.GCS;
 import com.treasurehunt.treasurehunt.db.MySQL.MySQL;
 import com.treasurehunt.treasurehunt.db.MySQL.MySQLConnectionPoolContextListener;
+import com.treasurehunt.treasurehunt.db.gcs.GCSClientContextListener;
+
+
 import com.treasurehunt.treasurehunt.entity.Listing;
 import org.json.JSONObject;
 
@@ -32,6 +36,7 @@ public class ListingServlet extends HttpServlet {
 
         // Upload pictures and get urls
         JSONObject pictureArray = new JSONObject();
+        Storage storage = GCSClientContextListener.createGCSClient();
 
         String[] nameList = {"picture_1", "picture_2", "picture_3"};
         for (int i = 0; i < nameList.length; i += 1) {
@@ -43,7 +48,8 @@ public class ListingServlet extends HttpServlet {
 
                 String fileName = System.currentTimeMillis() + filePart.getSubmittedFileName();
                 InputStream fileInputStream = filePart.getInputStream();
-                String url = GCS.uploadToGCS(fileName, fileInputStream);
+
+                String url = GCS.uploadPicture(storage, fileName, fileInputStream);
 
                 JSONObject picture = new JSONObject();
                 picture.put("name", fileName);
@@ -66,10 +72,10 @@ public class ListingServlet extends HttpServlet {
                 .setDescription(request.getParameter("description"))
                 .setItemCondition(request.getParameter("condition"))
                 .setBrand(request.getParameter("brand"))
-                .setPictureUrls(pictureArray.toString());
+                .setPictureUrls(pictureArray);
 
         // Connect to MySQL
-        DataSource pool = (DataSource) request.getServletContext().getAttribute("my-pool");
+        DataSource pool = (DataSource) request.getServletContext().getAttribute("mysql-pool");
         try (Connection conn = pool.getConnection()) {
 
             // Get fullName and address from userDB, and add these info to builder
@@ -88,6 +94,7 @@ public class ListingServlet extends HttpServlet {
 
         } catch (SQLException ex) {
             response.setStatus(500);
+            ex.printStackTrace();
             response.getWriter().write("data received, but unable to insert data to MySQL");
         }
 

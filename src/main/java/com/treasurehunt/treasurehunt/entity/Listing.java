@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.json.JSONObject;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -31,7 +32,7 @@ public class Listing {
     @JsonProperty("address")
     private String address;
     @JsonProperty("pictureUrls")
-    private String pictureUrls;
+    private JSONObject pictureUrls;
     @JsonProperty("date")
     private String date;
 
@@ -75,7 +76,7 @@ public class Listing {
         return address;
     }
 
-    public String getPictureUrls() {
+    public JSONObject getPictureUrls() {
         return pictureUrls;
     }
 
@@ -111,7 +112,7 @@ public class Listing {
         private String itemCondition;
         private String brand;
         private String address;
-        private String pictureUrls;
+        private JSONObject pictureUrls;
         private String date;
 
         public Builder setListingId(String listingId) {
@@ -164,7 +165,7 @@ public class Listing {
             return this;
         }
 
-        public Builder setPictureUrls(String pictureUrls) {
+        public Builder setPictureUrls(JSONObject pictureUrls) {
             this.pictureUrls = pictureUrls;
             return this;
         }

@@ -49,7 +49,7 @@ public class MySQLTableCreator {
                         + "description VARCHAR(255) NOT NULL, "
                         + "item_condition VARCHAR(255) NOT NULL, "
                         + "brand VARCHAR(255), "
-                        + "picture_urls LONG VARCHAR , "
+                        + "picture_urls JSON, "
                         + "seller_id VARCHAR(255) NOT NULL, "
                         + "seller_name VARCHAR(255) NOT NULL, "
                         + "address VARCHAR(255) NOT NULL, "

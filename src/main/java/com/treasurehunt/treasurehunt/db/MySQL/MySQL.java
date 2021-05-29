@@ -3,6 +3,7 @@ package com.treasurehunt.treasurehunt.db.MySQL;
 import com.treasurehunt.treasurehunt.db.MySQL.MySQLException;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import com.treasurehunt.treasurehunt.entity.User;
+import org.json.JSONObject;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -46,16 +47,17 @@ public class MySQL {
                 postListing.setString(5, listing.getDescription());
                 postListing.setString(6, listing.getItemCondition());
                 postListing.setString(7, listing.getBrand());
-                postListing.setString(8, listing.getPictureUrls());
+                postListing.setObject(8, listing.getPictureUrls());
                 postListing.setString(9, listing.getSellerId());
                 postListing.setString(10, listing.getSellerName());
                 postListing.setString(11, listing.getAddress());
                 postListing.setTimestamp(12, new java.sql.Timestamp(System.currentTimeMillis()));
 
-                postListing.execute();
+                postListing.executeUpdate();
 
-            } catch (SQLException throwables) {
+            } catch (Exception throwables) {
                 throwables.printStackTrace();
+                throw new MySQLException("Failed to add listing to DB");
             }
 
         } catch (Exception e) {
@@ -214,7 +216,7 @@ public class MySQL {
                         .setDescription(rs.getString("description"))
                         .setItemCondition(rs.getString("item_condition"))
                         .setBrand(rs.getString("brand"))
-                        .setPictureUrls(rs.getString("picture_urls"))
+                        .setPictureUrls((JSONObject) rs.getObject("picture_urls"))
                         .setSellerId(rs.getString("seller_id"))
                         .setSellerName(rs.getString("seller_name"))
                         .setAddress(rs.getString("address"))
