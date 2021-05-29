@@ -3,6 +3,7 @@ package com.treasurehunt.treasurehunt.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -13,6 +14,7 @@ public class Picture {
     @JsonProperty("name")
     private String name;
     @JsonProperty("url")
+    @JsonRawValue
     private String url;
 
     public String getName() {

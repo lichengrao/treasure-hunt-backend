@@ -31,6 +31,7 @@ public class Listing {
     @JsonProperty("brand")
     private String brand;
     @JsonProperty("address")
+    @JsonRawValue
     private String address;
     @JsonProperty("pictureUrls")
     @JsonRawValue

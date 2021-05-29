@@ -58,10 +58,18 @@ public class ListingServlet extends HttpServlet {
             }
         }
 
-        // Get sellerID from usersDB as foreign key
+        // Connect to MySQL
+        DataSource pool = (DataSource) request.getServletContext().getAttribute("mysql-pool");
+        // Get sellerID from request body as foreign key
         String sellerID = request.getParameter("seller_user_id");
 
-        // Read info from request body (SellerName and Address will be added later from userDB)
+        // Get fullName and address from userDB
+        String[] queryResult = MySQL.getSellerNameAddress(pool, sellerID);
+        String fullName = queryResult[0] + " " + queryResult[1];
+        String address = queryResult[2];
+
+
+        // Read info from request body
         Listing.Builder builder = new Listing.Builder();
         builder.setListingId(ID)
                 .setTitle(request.getParameter("title"))
@@ -71,31 +79,15 @@ public class ListingServlet extends HttpServlet {
                 .setDescription(request.getParameter("description"))
                 .setItemCondition(request.getParameter("condition"))
                 .setBrand(request.getParameter("brand"))
-                .setPictureUrls(pictureArray.toString());
+                .setPictureUrls(pictureArray.toString())
+                .setSellerName(fullName)
+                .setAddress(address);
 
-        // Connect to MySQL
-        DataSource pool = (DataSource) request.getServletContext().getAttribute("mysql-pool");
-        try (Connection conn = pool.getConnection()) {
+        // Build a java object which contains all listing info
+        Listing listing = builder.build();
 
-            // Get fullName and address from userDB, and add these info to builder
-            String[] queryResult = MySQL.getSellerNameAddress(conn, sellerID);
-            String fullName = queryResult[0] + " " + queryResult[1];
-            String address = queryResult[2];
-
-            // Add SellerName and Address to builder
-            builder.setSellerName(fullName).setAddress(address);
-
-            // Build a java object which contains all listing info
-            Listing listing = builder.build();
-
-            // Add these info to MySQL database
-            MySQL.createListing(conn, listing);
-
-        } catch (SQLException ex) {
-            response.setStatus(500);
-            ex.printStackTrace();
-            response.getWriter().write("data received, but unable to insert data to MySQL");
-        }
+        // Add these info to MySQL database
+        MySQL.createListing(pool, listing);
 
         // ListingID is return as the respondBody
         // so no need to serialize Java objects into JSON string
@@ -110,13 +102,11 @@ public class ListingServlet extends HttpServlet {
             IOException {
 
         String listingID = request.getParameter("listing_id");
-
         Listing listing = new Listing();
 
         DataSource pool = (DataSource) request.getServletContext().getAttribute("mysql-pool");
-
         try (Connection conn = pool.getConnection()) {
-            listing = MySQL.getListing(conn, listingID);
+            listing = MySQL.getListing(pool, listingID);
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }

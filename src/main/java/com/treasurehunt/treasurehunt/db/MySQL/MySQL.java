@@ -32,9 +32,10 @@ public class MySQL {
     }
 
     // Create new listing in listings db
-    public static void createListing(Connection conn, Listing listing) throws MySQLException {
+    public static void createListing(DataSource pool, Listing listing) throws MySQLException {
+
         // Create a connection from the given pool
-        try {
+        try (Connection conn = pool.getConnection()) {
 
             // Insert the new data to listingsDB
             String sql = "INSERT INTO listings VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -165,57 +166,61 @@ public class MySQL {
         }
     }
 
-    public static String[] getSellerNameAddress(Connection conn, String SellerID) throws SQLException {
-
-        String sql = "SELECT first_name, last_name, address FROM users WHERE user_id = ?";
+    public static String[] getSellerNameAddress(DataSource pool, String SellerID) throws MySQLException {
 
         String[] result = new String[3];
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
-            statement.setString(1, SellerID);
-            ResultSet rs = statement.executeQuery();
 
-            if (rs.next()) {
-                result[0] = rs.getString("first_name");
-                result[1] = rs.getString("last_name");
-                result[2] = rs.getString("address");
+        try (Connection conn = pool.getConnection()) {
+            String sql = "SELECT first_name, last_name, address FROM users WHERE user_id = ?";
+
+            try (PreparedStatement statement = conn.prepareStatement(sql)) {
+                statement.setString(1, SellerID);
+                ResultSet rs = statement.executeQuery();
+
+                if (rs.next()) {
+                    result[0] = rs.getString("first_name");
+                    result[1] = rs.getString("last_name");
+                    result[2] = rs.getString("address");
+                }
+
             }
-
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
         return result;
     }
 
-    public static Listing getListing(Connection conn, String listingID) throws SQLException {
+    public static Listing getListing(DataSource pool, String listingID) throws MySQLException {
 
         Listing listing = new Listing();
 
-        String sql = "SELECT * FROM listings WHERE listing_id = ?";
+        try (Connection conn = pool.getConnection()) {
+            String sql = "SELECT * FROM listings WHERE listing_id = ?";
 
-        try (PreparedStatement statement = conn.prepareStatement(sql)) {
-            statement.setString(1, listingID);
-            ResultSet rs = statement.executeQuery();
+            try (PreparedStatement statement = conn.prepareStatement(sql)) {
+                statement.setString(1, listingID);
+                ResultSet rs = statement.executeQuery();
 
-            if (rs.next()) {
-
-                Listing.Builder builder = new Listing.Builder();
-                builder.setListingId(listingID)
-                        .setTitle(rs.getString("title"))
-                        .setPrice(rs.getDouble("price"))
-                        .setCategory(rs.getString("category"))
-                        .setDescription(rs.getString("description"))
-                        .setItemCondition(rs.getString("item_condition"))
-                        .setBrand(rs.getString("brand"))
-                        .setPictureUrls(rs.getString("picture_urls"))
-                        .setSellerId(rs.getString("seller_id"))
-                        .setSellerName(rs.getString("seller_name"))
-                        .setAddress(rs.getString("address"))
-                        .setDate(rs.getString("date"));
-
-                listing = builder.build();
+                if (rs.next()) {
+                    Listing.Builder builder = new Listing.Builder();
+                    builder.setListingId(listingID)
+                            .setTitle(rs.getString("title"))
+                            .setPrice(rs.getDouble("price"))
+                            .setCategory(rs.getString("category"))
+                            .setDescription(rs.getString("description"))
+                            .setItemCondition(rs.getString("item_condition"))
+                            .setBrand(rs.getString("brand"))
+                            .setPictureUrls(rs.getString("picture_urls"))
+                            .setSellerId(rs.getString("seller_id"))
+                            .setSellerName(rs.getString("seller_name"))
+                            .setAddress(rs.getString("address"))
+                            .setDate(rs.getString("date"));
+                    listing = builder.build();
+                }
             }
-
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
-
         return listing;
-
     }
 }
