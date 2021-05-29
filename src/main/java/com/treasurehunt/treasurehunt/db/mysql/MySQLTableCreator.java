@@ -46,14 +46,16 @@ public class MySQLTableCreator {
                         + "title VARCHAR(255) NOT NULL, "
                         + "price DOUBLE NOT NULL, "
                         + "category VARCHAR(255) NOT NULL, "
-                        + "seller_id VARCHAR(255) NOT NULL, "
-                        + "seller_name VARCHAR(255) NOT NULL, "
                         + "description VARCHAR(255) NOT NULL, "
                         + "item_condition VARCHAR(255) NOT NULL, "
-                        + "address VARCHAR(255) NOT NULL, "
+                        + "brand VARCHAR(255), "
                         + "picture_urls JSON, "
+                        + "seller_id VARCHAR(255) NOT NULL, "
+                        + "seller_name VARCHAR(255) NOT NULL, "
+                        + "address VARCHAR(255) NOT NULL, "
+                        + "date TIMESTAMP, "
                         + "PRIMARY KEY (listing_id), "
-                        + "FOREIGN KEY (seller_id) REFERENCES users(user_id)"
+                        + "FOREIGN KEY (seller_id) REFERENCES users(user_id) ON DELETE CASCADE"
                         + ")";
                 statement.executeUpdate(sql);
 

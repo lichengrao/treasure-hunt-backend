@@ -6,6 +6,8 @@ import com.treasurehunt.treasurehunt.entity.User;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,14 +29,35 @@ public class MySQL {
     }
 
     // Create new listing in listings db
-    public static String createListing(DataSource pool, Listing listing) throws MySQLException {
+    public static void createListing(DataSource pool, Listing listing) throws MySQLException {
+
         // Create a connection from the given pool
         try (Connection conn = pool.getConnection()) {
-            // TODO
-            return "";
+
+            // Insert the new data to listingsDB
+            String sql = "INSERT INTO listings VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            try (PreparedStatement postListing = conn.prepareStatement(sql)) {
+
+                postListing.setString(1, listing.getListingId());
+                postListing.setString(2, listing.getTitle());
+                postListing.setDouble(3, listing.getPrice());
+                postListing.setString(4, listing.getCategory());
+                postListing.setString(5, listing.getDescription());
+                postListing.setString(6, listing.getItemCondition());
+                postListing.setString(7, listing.getBrand());
+                postListing.setString(8, listing.getPictureUrls());
+                postListing.setString(9, listing.getSellerId());
+                postListing.setString(10, listing.getSellerName());
+                postListing.setString(11, listing.getAddress());
+                postListing.setTimestamp(12, new java.sql.Timestamp(System.currentTimeMillis()));
+
+                postListing.executeUpdate();
+
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new MySQLException("Failed to create Listing");
+            throw new MySQLException("Failed to create listing");
         }
     }
 
@@ -134,6 +157,68 @@ public class MySQL {
         } catch (Exception e) {
             e.printStackTrace();
             throw new MySQLException("Failed to unsave listing");
+        }
+    }
+
+    public static String[] getSellerNameAddress(DataSource pool, String SellerID) throws MySQLException {
+
+        // Hardcoded, Change later
+        // TODO
+        String[] result = new String[3];
+
+        try (Connection conn = pool.getConnection()) {
+            String sql = "SELECT first_name, last_name, address FROM users WHERE user_id = ?";
+
+            try (PreparedStatement statement = conn.prepareStatement(sql)) {
+                statement.setString(1, SellerID);
+                ResultSet rs = statement.executeQuery();
+
+                if (rs.next()) {
+                    result[0] = rs.getString("first_name");
+                    result[1] = rs.getString("last_name");
+                    result[2] = rs.getString("address");
+                }
+
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+            throw new MySQLException("Failed to get user from DB");
+        }
+        return result;
+    }
+
+    // Get Listing from listings db
+    public static Listing getListing(DataSource pool, String listingId) throws MySQLException {
+        Listing listing = new Listing();
+
+        try (Connection conn = pool.getConnection()) {
+            String sql = "SELECT * FROM listings WHERE listing_id = ?";
+
+            try (PreparedStatement statement = conn.prepareStatement(sql)) {
+                statement.setString(1, listingId);
+                ResultSet rs = statement.executeQuery();
+
+                if (rs.next()) {
+                    Listing.Builder builder = new Listing.Builder();
+                    builder.setListingId(listingId)
+                            .setTitle(rs.getString("title"))
+                            .setPrice(rs.getDouble("price"))
+                            .setCategory(rs.getString("category"))
+                            .setDescription(rs.getString("description"))
+                            .setItemCondition(rs.getString("item_condition"))
+                            .setBrand(rs.getString("brand"))
+                            .setPictureUrls(rs.getString("picture_urls"))
+                            .setSellerId(rs.getString("seller_id"))
+                            .setSellerName(rs.getString("seller_name"))
+                            .setAddress(rs.getString("address"))
+                            .setDate(rs.getString("date"));
+                    listing = builder.build();
+                }
+            }
+            return listing;
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+            throw new MySQLException("Failed to get listing from DB");
         }
     }
 }
