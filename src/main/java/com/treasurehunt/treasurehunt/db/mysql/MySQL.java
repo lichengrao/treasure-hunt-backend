@@ -1,10 +1,7 @@
-package com.treasurehunt.treasurehunt.db.MySQL;
+package com.treasurehunt.treasurehunt.db.mysql;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.treasurehunt.treasurehunt.db.MySQL.MySQLException;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import com.treasurehunt.treasurehunt.entity.User;
-import org.json.JSONObject;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -57,13 +54,10 @@ public class MySQL {
 
                 postListing.executeUpdate();
 
-            } catch (Exception throwables) {
-                throwables.printStackTrace();
-                throw new MySQLException("Failed to add listing to DB");
             }
-
         } catch (Exception e) {
             e.printStackTrace();
+            throw new MySQLException("Failed to create listing");
         }
     }
 
@@ -168,6 +162,8 @@ public class MySQL {
 
     public static String[] getSellerNameAddress(DataSource pool, String SellerID) throws MySQLException {
 
+        // Hardcoded, Change later
+        // TODO
         String[] result = new String[3];
 
         try (Connection conn = pool.getConnection()) {
@@ -186,24 +182,25 @@ public class MySQL {
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
+            throw new MySQLException("Failed to get user from DB");
         }
         return result;
     }
 
-    public static Listing getListing(DataSource pool, String listingID) throws MySQLException {
-
+    // Get Listing from listings db
+    public static Listing getListing(DataSource pool, String listingId) throws MySQLException {
         Listing listing = new Listing();
 
         try (Connection conn = pool.getConnection()) {
             String sql = "SELECT * FROM listings WHERE listing_id = ?";
 
             try (PreparedStatement statement = conn.prepareStatement(sql)) {
-                statement.setString(1, listingID);
+                statement.setString(1, listingId);
                 ResultSet rs = statement.executeQuery();
 
                 if (rs.next()) {
                     Listing.Builder builder = new Listing.Builder();
-                    builder.setListingId(listingID)
+                    builder.setListingId(listingId)
                             .setTitle(rs.getString("title"))
                             .setPrice(rs.getDouble("price"))
                             .setCategory(rs.getString("category"))
@@ -218,9 +215,10 @@ public class MySQL {
                     listing = builder.build();
                 }
             }
+            return listing;
         } catch (SQLException throwables) {
             throwables.printStackTrace();
+            throw new MySQLException("Failed to get listing from DB");
         }
-        return listing;
     }
 }

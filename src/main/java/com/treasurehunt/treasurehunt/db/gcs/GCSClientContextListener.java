@@ -9,11 +9,11 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 
 @WebListener("Creates a GCS client that is stored in the Servlet's context for later use via attribute gcs-client")
-public class GCSClientContextListener implements ServletContextListener {
+class GCSClientContextListener implements ServletContextListener {
 
     private static final String GOOGLE_CLOUD_PROJECT_ID = "treasurehunt-314717";
 
-    public static Storage createGCSClient() {
+    static Storage createGCSClient() {
         return StorageOptions.newBuilder().setProjectId(GOOGLE_CLOUD_PROJECT_ID).build().getService();
     }
 

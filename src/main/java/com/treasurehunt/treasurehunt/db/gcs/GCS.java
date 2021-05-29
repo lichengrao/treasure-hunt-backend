@@ -9,6 +9,7 @@ import java.io.InputStream;
 
 public class GCS {
 
+    // Deployment: change for deployment
     private static final String bucketName = "thpictures";
 
     // Upload picture to listing-pictures bucket in GCS

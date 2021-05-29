@@ -17,6 +17,7 @@ import java.util.Map;
 
 public class Elasticsearch {
 
+    // Deployment - double check here
     private static final String LISTINGS_INDEX = "listings";
 
     // Build request object for Elasticsearch query
