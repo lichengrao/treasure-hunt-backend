@@ -1,37 +1,47 @@
-package com.treasurehunt.treasurehunt.entity;
+package com.treasurehunt.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.List;
+import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-//@JsonDeserialize(builder = Listing.Builder.class))
-public class Listing {
+@JsonDeserialize(builder = Listing.Builder.class)
 
-    private String listing_id;
+public class Listing {
+    @JsonProperty("listingId")
+    private String listingId;
     @JsonProperty("title")
     private String title;
     @JsonProperty("price")
     private double price;
     @JsonProperty("category")
     private String category;
-    @JsonProperty("seller_id")
-    private String seller_id;
-    @JsonProperty("seller_name")
-    private String seller_name;
+    @JsonProperty("sellerId")
+    private String sellerId;
+    @JsonProperty("sellerName")
+    private String sellerName;
     @JsonProperty("description")
     private String description;
-    @JsonProperty("item_condition")
-    private String item_condition;
-
+    @JsonProperty("itemCondition")
+    private String itemCondition;
+    @JsonProperty("brand")
+    private String brand;
+    @JsonProperty("address")
     private String address;
+    @JsonProperty("pictureUrls")
+    private String pictureUrls;
+    @JsonProperty("date")
+    private String date;
 
-    private String picture_urls;
-
-    public String getListing_id() {
-        return listing_id;
+    public String getListingId() {
+        return listingId;
     }
 
     public String getTitle() {
@@ -46,59 +56,71 @@ public class Listing {
         return category;
     }
 
-    public String getSeller_id() {
-        return seller_id;
+    public String getSellerId() {
+        return sellerId;
     }
 
-    public String getSeller_name() {
-        return seller_name;
+    public String getSellerName() {
+        return sellerName;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public String getItem_condition() {
-        return item_condition;
+    public String getItemCondition() {
+        return itemCondition;
+    }
+
+    public String getBrand() {
+        return brand;
     }
 
     public String getAddress() {
         return address;
     }
 
-    public String getPicture_urls() {
-        return picture_urls;
+    public String getPictureUrls() {
+        return pictureUrls;
+    }
+
+    public String getDate() {
+        return date;
     }
 
     public Listing(Builder builder) {
-        this.listing_id = builder.listing_id;
+        this.listingId = builder.listingId;
         this.title = builder.title;
         this.price = builder.price;
         this.category = builder.category;
-        this.seller_id = builder.seller_id;
-        this.seller_name = builder.seller_name;
+        this.sellerId = builder.sellerId;
+        this.sellerName = builder.sellerName;
         this.description = builder.description;
-        this.item_condition = builder.item_condition;
+        this.itemCondition = builder.itemCondition;
         this.address = builder.address;
-        this.picture_urls = builder.picture_urls;
+        this.brand = builder.brand;
+        this.pictureUrls = builder.pictureUrls;
+        this.date = builder.date;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Builder {
-        private String listing_id;
+        private String listingId;
         private String title;
         private double price;
         private String category;
-        private String seller_id;
-        private String seller_name;
+        private String sellerId;
+        private String sellerName;
         private String description;
-        private String item_condition;
+        private String itemCondition;
+        private String brand;
         private String address;
-        private String picture_urls;
+        private String pictureUrls;
+        private String date;
 
-        public Builder setListing_id(String listing_id) {
-            this.listing_id = listing_id;
+        public Builder setListingId(String listingId) {
+            this.listingId = listingId;
             return this;
         }
 
@@ -117,13 +139,13 @@ public class Listing {
             return this;
         }
 
-        public Builder setSeller_id(String seller_id) {
-            this.seller_id = seller_id;
+        public Builder setSellerId(String sellerId) {
+            this.sellerId = sellerId;
             return this;
         }
 
-        public Builder setSeller_name(String seller_name) {
-            this.seller_name = seller_name;
+        public Builder setSellerName(String sellerName) {
+            this.sellerName = sellerName;
             return this;
         }
 
@@ -132,8 +154,13 @@ public class Listing {
             return this;
         }
 
-        public Builder setItem_condition(String item_condition) {
-            this.item_condition = item_condition;
+        public Builder setItemCondition(String itemCondition) {
+            this.itemCondition = itemCondition;
+            return this;
+        }
+
+        public Builder setBrand(String brand) {
+            this.brand = brand;
             return this;
         }
 
@@ -142,11 +169,15 @@ public class Listing {
             return this;
         }
 
-        public Builder setPicture_urls(String picture_urls) {
-            this.picture_urls = picture_urls;
+        public Builder setPictureUrls(String pictureUrls) {
+            this.pictureUrls = pictureUrls;
             return this;
         }
 
+        public Builder setDate(String date) {
+            this.date = date;
+            return this;
+        }
         public Listing build() {
             return new Listing(this);
         }
