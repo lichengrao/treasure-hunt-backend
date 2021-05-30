@@ -41,4 +41,17 @@ public class ServletUtil {
             return null;
         }
     }
+
+    // Get authorized userId from request
+    public static String getAuthorizedUserIdFromRequest(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+
+        if (header == null || !header.startsWith("Bearer ")) {
+            throw new JwtTokenMissingException("No JWT token found in request headers");
+        }
+
+        String authToken = header.substring(7); // strip Bearer from header
+
+        return AuthUtils.getUserIdFromToken(authToken);
+    }
 }

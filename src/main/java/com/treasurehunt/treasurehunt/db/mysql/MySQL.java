@@ -28,7 +28,6 @@ public class MySQL {
 
         // Insert the new data to users db
         String sql = String.format("INSERT IGNORE INTO %s VALUES(?, ?, ?, ?, ?, ?, ?, ?)", USERS_DB);
-        ObjectMapper objectMapper = new ObjectMapper();
 
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             statement.setString(1, user.getUserId());
@@ -38,7 +37,7 @@ public class MySQL {
             statement.setString(5, user.getLastName());
             statement.setString(6, user.getEmail());
             statement.setString(7, user.getAddress());
-            statement.setString(8, objectMapper.writeValueAsString(user.getGeocodeLocation()));
+            statement.setString(8, new ObjectMapper().writeValueAsString(user.getGeocodeLocation()));
 
             return statement.executeUpdate() == 1;
         } catch (SQLException | JsonProcessingException e) {
@@ -49,10 +48,10 @@ public class MySQL {
     }
 
     // Create new listing in listings db
-    public static void createListing(Connection conn, Listing listing) throws MySQLException {
+    public static boolean createListing(Connection conn, Listing listing) throws MySQLException {
 
         // Insert the new data to listings db
-        String sql = String.format("INSERT INTO %s VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", LISTINGS_DB);
+        String sql = String.format("INSERT INTO %s VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", LISTINGS_DB);
 
         try (PreparedStatement postListing = conn.prepareStatement(sql)) {
 
@@ -68,12 +67,14 @@ public class MySQL {
             postListing.setString(10, listing.getSellerName());
             postListing.setString(11, listing.getAddress());
             postListing.setTimestamp(12, new java.sql.Timestamp(System.currentTimeMillis()));
+            postListing.setString(13, new ObjectMapper().writeValueAsString(listing.getGeocodeLocation()));
 
-            postListing.executeUpdate();
+            return postListing.executeUpdate() == 1;
 
-        } catch (SQLException e) {
+        } catch (SQLException | JsonProcessingException e) {
             e.printStackTrace();
             logger.warn("Failed to add the following listing to listings db: {}", listing.getTitle());
+            return false;
         }
     }
 

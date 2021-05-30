@@ -6,6 +6,7 @@ import com.treasurehunt.treasurehunt.db.gcs.GCS;
 import com.treasurehunt.treasurehunt.db.mysql.MySQL;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import com.treasurehunt.treasurehunt.entity.User;
+import com.treasurehunt.treasurehunt.utils.ServletUtil;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.time.LocalDate;
 
 @MultipartConfig
 @WebServlet(name = "ListingServlet", urlPatterns = {"/listing"})
@@ -33,6 +33,17 @@ public class ListingServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
             IOException {
+        // Verify token
+        String authorizedUserId = ServletUtil.getAuthorizedUserIdFromRequest(request);
+        // Get sellerID from request body as foreign key
+        String sellerId = request.getParameter("seller_user_id");
+        // Verify the two id's are equal
+        if (!authorizedUserId.equals(sellerId)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().print("Token invalid");
+            return;
+        }
+
         // Get UUID as ListingID
         String id = String.valueOf(System.currentTimeMillis());
 
@@ -63,8 +74,6 @@ public class ListingServlet extends HttpServlet {
 
         // Connect to MySQL
         DataSource pool = (DataSource) request.getServletContext().getAttribute("mysql-pool");
-        // Get sellerID from request body as foreign key
-        String sellerId = request.getParameter("seller_user_id");
 
         // Get fullName, address, and geolocation of seller from userDB
         User user = null;
@@ -96,12 +105,12 @@ public class ListingServlet extends HttpServlet {
                .setPictureUrls(pictureArray.toString())
                .setSellerName(String.format("%s %s", user.getFirstName(), user.getLastName()))
                .setAddress(user.getAddress())
-               .setDate(LocalDate.now().toString())
                .setGeocodeLocation(user.getGeocodeLocation());
 
         // Build a java object which contains all listing info
         Listing listing = builder.build();
 
+        boolean isListingAdded;
         // Add these info to MySQL database
         try (Connection conn = pool.getConnection()) {
             MySQL.createListing(conn, listing);

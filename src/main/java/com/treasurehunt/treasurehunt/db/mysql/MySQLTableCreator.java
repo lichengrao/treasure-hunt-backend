@@ -61,6 +61,7 @@ public class MySQLTableCreator {
                         + "seller_name VARCHAR(255) NOT NULL, "
                         + "address VARCHAR(255) NOT NULL, "
                         + "date TIMESTAMP, "
+                        + "geo_location VARCHAR(255) NOT NULL, "
                         + "PRIMARY KEY (listing_id), "
                         + "FOREIGN KEY (seller_id) REFERENCES users(user_id) ON DELETE CASCADE"
                         + ")";

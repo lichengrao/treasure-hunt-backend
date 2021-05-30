@@ -4,6 +4,7 @@ import com.treasurehunt.treasurehunt.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.Keys;
 
 import java.time.Instant;
@@ -51,6 +52,8 @@ public class AuthUtils {
             // You just get to ‘inspect’ the JWT data for key discovery before the parser validates it.
 
             return result.getBody().getSubject();
+        } catch (MalformedJwtException e) {
+            return "Invalid Token";
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
