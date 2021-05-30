@@ -18,8 +18,8 @@ public class MySQL {
     private static final String SAVED_RECORDS_DB = "saved_records";
 
     // Create user in users db
-    public static String createUser(DataSource pool, User user) throws MySQLException {
-        try (Connection conn = pool.getConnection()) {
+    public static String createUser(Connection conn, User user) throws MySQLException {
+        try {
             // TODO
             return "";
         } catch (Exception e) {
@@ -29,11 +29,9 @@ public class MySQL {
     }
 
     // Create new listing in listings db
-    public static void createListing(DataSource pool, Listing listing) throws MySQLException {
+    public static void createListing(Connection conn, Listing listing) throws MySQLException {
 
-        // Create a connection from the given pool
-        try (Connection conn = pool.getConnection()) {
-
+        try {
             // Insert the new data to listingsDB
             String sql = "INSERT INTO listings VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -62,9 +60,8 @@ public class MySQL {
     }
 
     // Update an existing listing in listings db
-    public static String updateListing(DataSource pool, Listing listing) throws MySQLException {
-        // Create a connection from the given pool
-        try (Connection conn = pool.getConnection()) {
+    public static String updateListing(Connection conn, Listing listing) throws MySQLException {
+        try {
             // TODO
             return "";
         } catch (Exception e) {
@@ -74,9 +71,8 @@ public class MySQL {
     }
 
     // Delete an existing listing in listings db
-    public static String deleteListing(DataSource pool, Listing listing) throws MySQLException {
-        // Create a connection from the given pool
-        try (Connection conn = pool.getConnection()) {
+    public static String deleteListing(Connection conn, Listing listing) throws MySQLException {
+        try {
             // TODO
             return "";
         } catch (Exception e) {
@@ -86,12 +82,11 @@ public class MySQL {
     }
 
     // Get listings created by user
-    public static List<Listing> getMyListings(DataSource pool, String userId) throws MySQLException {
+    public static List<Listing> getMyListings(Connection conn, String userId) throws MySQLException {
         // Build a return object
         List<Listing> myListings = new ArrayList<>();
 
-        // Create a connection from the given pool
-        try (Connection conn = pool.getConnection()) {
+        try {
 
             // Query users DB for userId == seller_id
             // TODO
@@ -108,12 +103,11 @@ public class MySQL {
     }
 
     // Get listings saved by user
-    public static List<Listing> getSavedListings(DataSource pool, String userId) throws MySQLException {
+    public static List<Listing> getSavedListings(Connection conn, String userId) throws MySQLException {
         // Build a return object
         List<Listing> savedListings = new ArrayList<>();
 
-        // Create a connection from the given pool
-        try (Connection conn = pool.getConnection()) {
+        try {
 
             // Query saved_records DB for userId == user_id and query listings DB with listing_id's
             // Use JOIN to optimize
@@ -131,9 +125,8 @@ public class MySQL {
     }
 
     // Create a saved record in saved_records
-    public static void saveListing(DataSource pool, String userId, String listingId) throws MySQLException {
-        // Create a connection from the given pool
-        try (Connection conn = pool.getConnection()) {
+    public static void saveListing(Connection conn, String userId, String listingId) throws MySQLException {
+        try {
             // Build and execute SQL statement
             // TODO
             String sql = "";
@@ -146,9 +139,8 @@ public class MySQL {
     }
 
     // Delete a saved record in saved_records
-    public static void unsaveListing(DataSource pool, String userId, String listingId) throws MySQLException {
-        // Create a connection from the given pool
-        try (Connection conn = pool.getConnection()) {
+    public static void unsaveListing(Connection conn, String userId, String listingId) throws MySQLException {
+        try {
             // Build and execute SQL statement
             // TODO
             String sql = "";
@@ -162,13 +154,13 @@ public class MySQL {
 
     // Need to change this to getUser
     // TODO
-    public static String[] getSellerNameAddress(DataSource pool, String SellerID) throws MySQLException {
+    public static String[] getSellerNameAddress(Connection conn, String SellerID) throws MySQLException {
 
         // Hardcoded, Change later
         // TODO
         String[] result = new String[3];
 
-        try (Connection conn = pool.getConnection()) {
+        try {
             String sql = "SELECT first_name, last_name, address FROM users WHERE user_id = ?";
 
             try (PreparedStatement statement = conn.prepareStatement(sql)) {
@@ -182,18 +174,18 @@ public class MySQL {
                 }
 
             }
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
             throw new MySQLException("Failed to get user from DB");
         }
         return result;
     }
 
     // Get Listing from listings db
-    public static Listing getListing(DataSource pool, String listingId) throws MySQLException {
+    public static Listing getListing(Connection conn, String listingId) throws MySQLException {
         Listing listing = new Listing();
 
-        try (Connection conn = pool.getConnection()) {
+        try {
             String sql = "SELECT * FROM listings WHERE listing_id = ?";
 
             try (PreparedStatement statement = conn.prepareStatement(sql)) {
@@ -218,8 +210,8 @@ public class MySQL {
                 }
             }
             return listing;
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
             throw new MySQLException("Failed to get listing from DB");
         }
     }
