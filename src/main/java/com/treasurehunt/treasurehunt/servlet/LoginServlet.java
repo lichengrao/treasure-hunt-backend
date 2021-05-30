@@ -44,7 +44,6 @@ public class LoginServlet extends HttpServlet {
         }
 
         // Get user from MySQL db that corresponds to user_id
-        String firstName;
         User user = null;
         DataSource pool = (DataSource) request.getServletContext().getAttribute("mysql-pool");
         try (Connection conn = pool.getConnection()) {
