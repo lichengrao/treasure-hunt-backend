@@ -1,6 +1,9 @@
 package com.treasurehunt.treasurehunt.auth;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Header;
+import io.jsonwebtoken.Jwt;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
 import java.time.Instant;
@@ -15,7 +18,8 @@ public class Auth {
     private static final String SIGNATURE = "SIGNATURE";
 
     public static boolean verifyUser(String userId) {
-        // Step1: The server verifies the credentials are correct and created an encrypted and signed token with a private key
+        // Step1: The server verifies the credentials are correct and created an encrypted and signed token with a
+        // private key
         if (true) {
             return false;
         } else {
@@ -48,7 +52,8 @@ public class Auth {
                 .setAllowedClockSkewSeconds(62)
                 .setSigningKey(Keys.hmacShaKeyFor(secret))
                 .parseClaimsJwt(jwt);
-        // The signature is still validated, and the JWT instance will still not be returned if the jwt string is invalid, as expected.
+        // The signature is still validated, and the JWT instance will still not be returned if the jwt string is
+        // invalid, as expected.
         // You just get to ‘inspect’ the JWT data for key discovery before the parser validates it.
         return result.toString();
     }

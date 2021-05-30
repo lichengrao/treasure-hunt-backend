@@ -12,21 +12,16 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 public class User {
     @JsonProperty("user_id")
     private final String userId;
-
-    @JsonProperty("password")
-    private String password;
-
     @JsonProperty("first_name")
     private final String firstName;
-
     @JsonProperty("last_name")
     private final String lastName;
-
     @JsonProperty("email")
     private final String email;
-
     @JsonProperty("address")
     private final String address;
+    @JsonProperty("password")
+    private String password;
 
 
     private User(Builder builder) {
