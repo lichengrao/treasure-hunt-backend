@@ -1,8 +1,9 @@
 package com.treasurehunt.treasurehunt.db.mysql;
 
 
-import com.treasurehunt.treasurehunt.db.gcs.GCS;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.treasurehunt.treasurehunt.entity.GeocodeLocation;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import com.treasurehunt.treasurehunt.entity.User;
 import org.slf4j.Logger;
@@ -111,8 +112,8 @@ public class MySQL {
         try {
             // query from listings DB
             String sql = "SELECT listing_id, picture_urls, title, price, date "
-                       + "FROM listings "
-                       + "WHERE seller_id = ?";
+                    + "FROM listings "
+                    + "WHERE seller_id = ?";
             PreparedStatement statement = conn.prepareStatement(sql);
             statement.setString(1, userId);
 
@@ -121,10 +122,10 @@ public class MySQL {
             if (rs.next()) {
                 Listing.Builder builder = new Listing.Builder();
                 builder.setListingId(rs.getString("listing_id"))
-                        .setPictureUrls(rs.getString("picture_urls"))
-                        .setTitle(rs.getString("title"))
-                        .setPrice(rs.getDouble("price"))
-                        .setDate(rs.getString("date"));
+                       .setPictureUrls(rs.getString("picture_urls"))
+                       .setTitle(rs.getString("title"))
+                       .setPrice(rs.getDouble("price"))
+                       .setDate(rs.getString("date"));
                 myListings.add(builder.build());
             }
             return myListings;
@@ -219,34 +220,62 @@ public class MySQL {
     public static Listing getListing(Connection conn, String listingId) throws MySQLException {
         Listing listing = new Listing();
 
-        try {
-            String sql = "SELECT * FROM listings WHERE listing_id = ?";
+        String sql = "SELECT * FROM listings WHERE listing_id = ?";
 
-            try (PreparedStatement statement = conn.prepareStatement(sql)) {
-                statement.setString(1, listingId);
-                ResultSet rs = statement.executeQuery();
+        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+            statement.setString(1, listingId);
+            ResultSet rs = statement.executeQuery();
 
-                if (rs.next()) {
-                    Listing.Builder builder = new Listing.Builder();
-                    builder.setListingId(listingId)
-                            .setTitle(rs.getString("title"))
-                            .setPrice(rs.getDouble("price"))
-                            .setCategory(rs.getString("category"))
-                            .setDescription(rs.getString("description"))
-                            .setItemCondition(rs.getString("item_condition"))
-                            .setBrand(rs.getString("brand"))
-                            .setPictureUrls(rs.getString("picture_urls"))
-                            .setSellerId(rs.getString("seller_id"))
-                            .setSellerName(rs.getString("seller_name"))
-                            .setAddress(rs.getString("address"))
-                            .setDate(rs.getString("date"));
-                    listing = builder.build();
-                }
+            if (rs.next()) {
+                Listing.Builder builder = new Listing.Builder();
+                builder.setListingId(listingId).setTitle(rs.getString("title"))
+                       .setPrice(rs.getDouble("price"))
+                       .setCategory(rs.getString("category"))
+                       .setDescription(rs.getString("description"))
+                       .setItemCondition(rs.getString("item_condition"))
+                       .setBrand(rs.getString("brand"))
+                       .setPictureUrls(rs.getString("picture_urls"))
+                       .setSellerId(rs.getString("seller_id"))
+                       .setSellerName(rs.getString("seller_name"))
+                       .setAddress(rs.getString("address"))
+                       .setDate(rs.getString("date"));
+                listing = builder.build();
             }
             return listing;
         } catch (SQLException e) {
             e.printStackTrace();
             throw new MySQLException("Failed to get listing from DB");
+        }
+    }
+
+    public static User getUser(Connection conn, String userId) throws MySQLException {
+
+        String sql = String.format("SELECT * FROM %s WHERE user_id = ?", USERS_DB);
+
+        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+            statement.setString(1, userId);
+            ResultSet rs = statement.executeQuery();
+
+            if (rs.next()) {
+                return new User.Builder()
+                        .userId(rs.getString("user_id"))
+                        .password(rs.getString("password"))
+                        .passwordSalt(rs.getString("password_salt"))
+                        .firstName(rs.getString("first_name"))
+                        .lastName(rs.getString("last_name"))
+                        .email(rs.getString("email"))
+                        .address(rs.getString("address"))
+                        .geocodeLocation(new ObjectMapper()
+                                .readValue(rs.getString("geo_location"), GeocodeLocation.class))
+                        .build();
+            } else {
+                logger.info("User does not exist");
+                return null;
+            }
+        } catch (SQLException | JsonProcessingException e) {
+            e.printStackTrace();
+            logger.warn("Unable to find user {} in users db", userId);
+            throw new MySQLException("Failed to find user in users db");
         }
     }
 }

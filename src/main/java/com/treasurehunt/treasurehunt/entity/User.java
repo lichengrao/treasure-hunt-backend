@@ -36,7 +36,7 @@ public class User {
         this.email = builder.email;
         this.address = builder.address;
         this.geocodeLocation = builder.geocodeLocation;
-
+        this.passwordSalt = builder.passwordSalt;
     }
 
     public String getUserId() {
@@ -100,6 +100,9 @@ public class User {
         @JsonProperty("password")
         private String password;
 
+        @JsonProperty("password_salt")
+        private String passwordSalt;
+
         @JsonProperty("first_name")
         private String firstName;
 
@@ -122,6 +125,11 @@ public class User {
 
         public Builder password(String password) {
             this.password = password;
+            return this;
+        }
+
+        public Builder passwordSalt(String passwordSalt) {
+            this.passwordSalt = passwordSalt;
             return this;
         }
 
@@ -148,7 +156,6 @@ public class User {
             this.address = address;
             return this;
         }
-
 
         public Builder geocodeLocation(GeocodeLocation geocodeLocation) {
             this.geocodeLocation = geocodeLocation;

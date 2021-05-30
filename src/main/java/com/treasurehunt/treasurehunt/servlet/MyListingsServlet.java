@@ -48,7 +48,8 @@ public class MyListingsServlet extends HttpServlet {
         } catch (SQLException e) {
             logger.warn("Error while attempting to delete listing from MySQL db", e);
             response.setStatus(500);
-            response.getWriter().write("Unable to successfully delete listing! Please check the application logs for more details");
+            response.getWriter()
+                    .write("Unable to successfully delete listing! Please check the application logs for more details");
         }
         response.setStatus(200);
         response.setContentType("application/json;charset=UTF-8");

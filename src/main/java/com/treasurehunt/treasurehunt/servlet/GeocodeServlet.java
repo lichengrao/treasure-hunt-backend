@@ -24,7 +24,8 @@ public class GeocodeServlet extends HttpServlet {
         // Let the client know the returned data is in JSON format.
         response.setContentType("application/json;charset=UTF-8");
         try {
-            response.getWriter().print(new ObjectMapper().writeValueAsString(googleMapsClient.getGeocodeResult(address)));
+            response.getWriter()
+                    .print(new ObjectMapper().writeValueAsString(googleMapsClient.getGeocodeResult(address)));
         } catch (GoogleMapsException e) {
             throw new ServletException(e);
         }

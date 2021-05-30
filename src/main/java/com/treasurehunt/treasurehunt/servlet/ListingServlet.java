@@ -81,16 +81,16 @@ public class ListingServlet extends HttpServlet {
         // Read info from request body
         Listing.Builder builder = new Listing.Builder();
         builder.setListingId(id)
-                .setTitle(request.getParameter("title"))
-                .setPrice(Double.parseDouble(request.getParameter("price")))
-                .setCategory(request.getParameter("category"))
-                .setSellerId(sellerID)
-                .setDescription(request.getParameter("description"))
-                .setItemCondition(request.getParameter("condition"))
-                .setBrand(request.getParameter("brand"))
-                .setPictureUrls(pictureArray.toString())
-                .setSellerName(fullName)
-                .setAddress(address);
+               .setTitle(request.getParameter("title"))
+               .setPrice(Double.parseDouble(request.getParameter("price")))
+               .setCategory(request.getParameter("category"))
+               .setSellerId(sellerID)
+               .setDescription(request.getParameter("description"))
+               .setItemCondition(request.getParameter("condition"))
+               .setBrand(request.getParameter("brand"))
+               .setPictureUrls(pictureArray.toString())
+               .setSellerName(fullName)
+               .setAddress(address);
 
         // Build a java object which contains all listing info
         Listing listing = builder.build();

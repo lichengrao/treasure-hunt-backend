@@ -1,12 +1,11 @@
 package com.treasurehunt.treasurehunt.servlet;
 
-import com.treasurehunt.treasurehunt.auth.PasswordUtils;
 import com.treasurehunt.treasurehunt.db.mysql.MySQL;
-import com.treasurehunt.treasurehunt.db.mysql.MySQLException;
 import com.treasurehunt.treasurehunt.entity.GeocodeResult;
 import com.treasurehunt.treasurehunt.entity.User;
 import com.treasurehunt.treasurehunt.external.GoogleMapsClient;
 import com.treasurehunt.treasurehunt.external.GoogleMapsException;
+import com.treasurehunt.treasurehunt.utils.PasswordUtils;
 import com.treasurehunt.treasurehunt.utils.ServletUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

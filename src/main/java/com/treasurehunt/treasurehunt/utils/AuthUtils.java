@@ -15,8 +15,10 @@ public class AuthUtils {
 
     // Signature for token generation
     private static final byte[] secret = Base64.getDecoder().decode("AMPtJss+/lcnifPliBUSAUEjBPH2ZQDaIX/jNhHkcbQ=");
+
     public static boolean verifyUser(String userId) {
-        // Step1: The server verifies the credentials are correct and created an encrypted and signed token with a private key
+        // Step1: The server verifies the credentials are correct and created an encrypted and signed token with a
+        // private key
         return true;
     }
 
@@ -24,14 +26,14 @@ public class AuthUtils {
 
         Instant now = Instant.now();
         String jwt = Jwts.builder()
-                .setSubject(user.getUserId())
-                .setAudience("video demo")
-                //.claim("1d20", new Random().nextInt(20) + 1)
-                .claim("email", user.getEmail())
-                .setIssuedAt(Date.from(now))
-                .setExpiration(Date.from(now.plus(60, ChronoUnit.MINUTES)))
-                .signWith(Keys.hmacShaKeyFor(secret))
-                .compact();
+                         .setSubject(user.getUserId())
+                         .setAudience("video demo")
+                         //.claim("1d20", new Random().nextInt(20) + 1)
+                         .claim("email", user.getEmail())
+                         .setIssuedAt(Date.from(now))
+                         .setExpiration(Date.from(now.plus(60, ChronoUnit.MINUTES)))
+                         .signWith(Keys.hmacShaKeyFor(secret))
+                         .compact();
         return jwt;
     }
 
@@ -40,12 +42,13 @@ public class AuthUtils {
         // Hash-based Message Authentication Code (HMAC)
         try {
             Jws<Claims> result = Jwts.parser()
-                .requireAudience("video demo")
-                .setAllowedClockSkewSeconds(62)
-                .setSigningKey(Keys.hmacShaKeyFor(secret))
-                .parseClaimsJws(jwt);
-        // The signature is still validated, and the JWT instance will still not be returned if the jwt string is invalid, as expected.
-        // You just get to ‘inspect’ the JWT data for key discovery before the parser validates it.
+                                     .requireAudience("video demo")
+                                     .setAllowedClockSkewSeconds(62)
+                                     .setSigningKey(Keys.hmacShaKeyFor(secret))
+                                     .parseClaimsJws(jwt);
+            // The signature is still validated, and the JWT instance will still not be returned if the jwt string is
+            // invalid, as expected.
+            // You just get to ‘inspect’ the JWT data for key discovery before the parser validates it.
 
             return result.getBody().getSubject();
         } catch (Exception e) {
@@ -55,6 +58,8 @@ public class AuthUtils {
 
 //    public static void main(String[] args) {
 //        System.out.println(generateToken(user ));
-//        System.out.println(getUserIdFromToken("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMTEiLCJhdWQiOiJ2aWRlbyBkZW1vIiwiMWQyMCI6MjAsImlhdCI6MTYyMjM5Mzc4OSwiZXhwIjoxNjIyMzk3Mzg5fQ.18iQ0PjXqHW8C9m3pfSTtQBXXhTfLd14zh3hZk5JS-0"));
+//        System.out.println(getUserIdFromToken("eyJhbGciOiJIUzI1NiJ9
+//        .eyJzdWIiOiIxMTEiLCJhdWQiOiJ2aWRlbyBkZW1vIiwiMWQyMCI6MjAsImlhdCI6MTYyMjM5Mzc4OSwiZXhwIjoxNjIyMzk3Mzg5fQ
+//        .18iQ0PjXqHW8C9m3pfSTtQBXXhTfLd14zh3hZk5JS-0"));
 //    }
 }
