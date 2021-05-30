@@ -1,5 +1,6 @@
 package com.treasurehunt.treasurehunt.db.mysql;
 
+import com.treasurehunt.treasurehunt.db.gcs.GCS;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import com.treasurehunt.treasurehunt.entity.User;
 
@@ -70,10 +71,14 @@ public class MySQL {
     }
 
     // Delete an existing listing in listings db
-    public static String deleteListing(Connection conn, Listing listing) throws MySQLException {
+    public static void deleteListing(Connection conn, String listingId) throws MySQLException {
+        // TODO: Last edited by Ruichen
+
         try {
-            // TODO
-            return "";
+            String sql = "DELETE FROM listings WHERE listing_id = ?";
+            PreparedStatement statement = conn.prepareStatement(sql);
+            statement.setString(1, listingId);
+            statement.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
             throw new MySQLException("Failed to delete Listing");
@@ -82,18 +87,29 @@ public class MySQL {
 
     // Get listings created by user
     public static List<Listing> getMyListings(Connection conn, String userId) throws MySQLException {
-        // Build a return object
+        // TODO: Last edited by Ruichen
+
         List<Listing> myListings = new ArrayList<>();
 
         try {
-
-            // Query users DB for userId == seller_id
-            // TODO
+            // query from listings DB
+            String sql = "SELECT listing_id, picture_urls, title, price, date "
+                       + "FROM listings "
+                       + "WHERE seller_id = ?";
+            PreparedStatement statement = conn.prepareStatement(sql);
+            statement.setString(1, userId);
 
             // Add listings in ResultSet to myListings
-            // TODO
-
-            // Return myListings
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                Listing.Builder builder = new Listing.Builder();
+                builder.setListingId(rs.getString("listing_id"))
+                        .setPictureUrls(rs.getString("picture_urls"))
+                        .setTitle(rs.getString("title"))
+                        .setPrice(rs.getDouble("price"))
+                        .setDate(rs.getString("date"));
+                myListings.add(builder.build());
+            }
             return myListings;
         } catch (Exception e) {
             e.printStackTrace();
@@ -139,15 +155,17 @@ public class MySQL {
 
     // Delete a saved record in saved_records
     public static void unsaveListing(Connection conn, String userId, String listingId) throws MySQLException {
+        // TODO: Last edited by Ruichen
+
         try {
-            // Build and execute SQL statement
-            // TODO
-            String sql = "";
+            String sql = "DELETE FROM saved_records WHERE user_id = ? AND listing_id = ?";
             PreparedStatement statement = conn.prepareStatement(sql);
+            statement.setString(1, userId);
+            statement.setString(2, listingId);
             statement.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
-            throw new MySQLException("Failed to unsave listing");
+            throw new MySQLException("Failed to unsave Listing");
         }
     }
 
