@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(builder = User.Builder.class)
+
 public class User {
     @JsonProperty("user_id")
     private final String userId;
@@ -35,6 +36,7 @@ public class User {
         this.email = builder.email;
         this.address = builder.address;
         this.geocodeLocation = builder.geocodeLocation;
+
     }
 
     public String getUserId() {
@@ -146,6 +148,7 @@ public class User {
             this.address = address;
             return this;
         }
+
 
         public Builder geocodeLocation(GeocodeLocation geocodeLocation) {
             this.geocodeLocation = geocodeLocation;
