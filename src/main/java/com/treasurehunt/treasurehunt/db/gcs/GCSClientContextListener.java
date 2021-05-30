@@ -2,6 +2,8 @@ package com.treasurehunt.treasurehunt.db.gcs;
 
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -13,6 +15,8 @@ import java.util.Properties;
 
 @WebListener("Creates a GCS client that is stored in the Servlet's context for later use via attribute gcs-client")
 public class GCSClientContextListener implements ServletContextListener {
+
+    private static final Logger logger = LoggerFactory.getLogger(GCSClientContextListener.class);
 
     private Storage createGCSClient() throws IOException {
         // get google_cloud_project_id from properties
@@ -36,9 +40,9 @@ public class GCSClientContextListener implements ServletContextListener {
             try {
                 storage = createGCSClient();
                 servletContext.setAttribute("gcs-client", storage);
-                System.out.println("Successfully created connection to GCS");
+                logger.info("Successfully created connection to GCS");
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new RuntimeException("Unable to connect to GCS. Please double check config and try again.");
             }
         }
     }
