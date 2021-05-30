@@ -3,10 +3,8 @@ package com.treasurehunt.treasurehunt.servlet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.storage.Storage;
 import com.treasurehunt.treasurehunt.db.gcs.GCS;
-import com.treasurehunt.treasurehunt.db.MySQL.MySQL;
-import com.treasurehunt.treasurehunt.db.MySQL.MySQLConnectionPoolContextListener;
-import com.treasurehunt.treasurehunt.db.gcs.GCSClientContextListener;
-
+import com.treasurehunt.treasurehunt.db.mysql.MySQL;
+import com.treasurehunt.treasurehunt.db.mysql.MySQLException;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import org.json.JSONObject;
 
@@ -20,8 +18,6 @@ import javax.servlet.http.Part;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.SQLException;
 
 @MultipartConfig
 @WebServlet(name = "ListingServlet", urlPatterns = {"/listing"})
@@ -31,11 +27,11 @@ public class ListingServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
             IOException {
         // Get UUID as ListingID
-        String ID = String.valueOf(System.currentTimeMillis());
+        String id = String.valueOf(System.currentTimeMillis());
 
         // Upload pictures and get urls
         JSONObject pictureArray = new JSONObject();
-        Storage storage = GCSClientContextListener.createGCSClient();
+        Storage storage = (Storage) request.getServletContext().getAttribute("gcs-client");
 
         String[] nameList = {"picture_1", "picture_2", "picture_3"};
         for (int i = 0; i < nameList.length; i += 1) {
@@ -54,7 +50,7 @@ public class ListingServlet extends HttpServlet {
                 picture.put("name", fileName);
                 picture.put("url", url);
 
-                pictureArray.put(nameList[i],picture);
+                pictureArray.put(nameList[i], picture);
             }
         }
 
@@ -71,7 +67,7 @@ public class ListingServlet extends HttpServlet {
 
         // Read info from request body
         Listing.Builder builder = new Listing.Builder();
-        builder.setListingId(ID)
+        builder.setListingId(id)
                 .setTitle(request.getParameter("title"))
                 .setPrice(Double.parseDouble(request.getParameter("price")))
                 .setCategory(request.getParameter("category"))
@@ -93,7 +89,7 @@ public class ListingServlet extends HttpServlet {
         // so no need to serialize Java objects into JSON string
         response.setStatus(200);
         response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().print(ID);
+        response.getWriter().print(id);
 
     }
 
@@ -101,14 +97,15 @@ public class ListingServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,
             IOException {
 
-        String listingID = request.getParameter("listing_id");
-        Listing listing = new Listing();
+        String listingId = request.getParameter("listing_id");
+        Listing listing;
 
         DataSource pool = (DataSource) request.getServletContext().getAttribute("mysql-pool");
-        try (Connection conn = pool.getConnection()) {
-            listing = MySQL.getListing(pool, listingID);
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
+        try {
+            listing = MySQL.getListing(pool, listingId);
+        } catch (MySQLException e) {
+            e.printStackTrace();
+            throw new ServletException("Cannot get listings");
         }
 
         response.setContentType("application/json;charset=UTF-8");

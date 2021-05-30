@@ -1,6 +1,5 @@
-package com.treasurehunt.treasurehunt.db.MySQL;
+package com.treasurehunt.treasurehunt.db.mysql;
 
-import com.treasurehunt.treasurehunt.entity.Listing;
 import com.zaxxer.hikari.HikariDataSource;
 
 import javax.servlet.ServletContext;
