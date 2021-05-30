@@ -1,4 +1,4 @@
-package com.treasurehunt.treasurehunt.servlet;
+package com.treasurehunt.treasurehunt.utils;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;

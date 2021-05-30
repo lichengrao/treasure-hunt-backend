@@ -11,7 +11,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.Date;
 
-public class Auth {
+public class AuthUtils {
 
     // Signature for token generation
     private static final byte[] secret = Base64.getDecoder().decode("AMPtJss+/lcnifPliBUSAUEjBPH2ZQDaIX/jNhHkcbQ=");

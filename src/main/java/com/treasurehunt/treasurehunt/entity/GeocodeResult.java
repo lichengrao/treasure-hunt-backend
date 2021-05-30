@@ -32,4 +32,22 @@ public class GeocodeResult {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    public GeocodeLocation getGeocodeLocation() {
+        for (GeocodeObject geocodeObject : results) {
+            if (geocodeObject.getGeometry() != null) {
+                return geocodeObject.getGeometry().getGeocodeLocation();
+            }
+        }
+        return null;
+    }
+
+    public String getFormattedAddress() {
+        for (GeocodeObject geocodeObject : results) {
+            if (geocodeObject.getFormattedAddress() != null) {
+                return geocodeObject.getFormattedAddress();
+            }
+        }
+        return null;
+    }
 }

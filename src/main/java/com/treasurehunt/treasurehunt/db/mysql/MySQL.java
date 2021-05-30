@@ -1,5 +1,7 @@
 package com.treasurehunt.treasurehunt.db.mysql;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import com.treasurehunt.treasurehunt.entity.User;
 import org.slf4j.Logger;
@@ -20,10 +22,11 @@ public class MySQL {
     private static final Logger logger = LoggerFactory.getLogger(MySQL.class);
 
     // Create user in users db
-    public static boolean addUser(Connection conn, User user) throws MySQLException {
+    public static boolean addUser(Connection conn, User user) {
 
         // Insert the new data to users db
         String sql = String.format("INSERT IGNORE INTO %s VALUES(?, ?, ?, ?, ?, ?, ?, ?)", USERS_DB);
+        ObjectMapper objectMapper = new ObjectMapper();
 
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             statement.setString(1, user.getUserId());
@@ -33,10 +36,10 @@ public class MySQL {
             statement.setString(5, user.getLastName());
             statement.setString(6, user.getEmail());
             statement.setString(7, user.getAddress());
-            statement.setString(8, user.getGeocodeLocation().toString());
+            statement.setString(8, objectMapper.writeValueAsString(user.getGeocodeLocation()));
 
             return statement.executeUpdate() == 1;
-        } catch (SQLException e) {
+        } catch (SQLException | JsonProcessingException e) {
             e.printStackTrace();
             logger.warn("Failed to add {} to users db", user.getUserId());
             return false;
