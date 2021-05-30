@@ -1,14 +1,19 @@
 package com.treasurehunt.treasurehunt.db.mysql;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.Statement;
 
 public class MySQLTableCreator {
+
     public static void main(String[] args) {
+        Logger logger = LoggerFactory.getLogger(MySQLTableCreator.class);
         // Step 1 Connect to MySQL.
         try {
-            System.out.println("Connecting to Cloud SQL");
+            logger.debug("Connecting to Cloud SQL");
             MySQLConnectionPool mySQLConnectionPool = new MySQLConnectionPool();
             DataSource pool = mySQLConnectionPool.pool;
 
@@ -33,10 +38,12 @@ public class MySQLTableCreator {
                 sql = "CREATE TABLE users ( "
                         + "user_id VARCHAR(255) NOT NULL, "
                         + "password VARCHAR(255) NOT NULL, "
+                        + "password_salt VARCHAR(255) NOT NULL, "
                         + "first_name VARCHAR(255) NOT NULL, "
                         + "last_name VARCHAR(255) NOT NULL, "
                         + "email VARCHAR(255) NOT NULL, "
                         + "address VARCHAR(255), "
+                        + "geo_location VARCHAR(255), "
                         + "PRIMARY KEY (user_id) "
                         + ")";
                 statement.executeUpdate(sql);
@@ -68,7 +75,7 @@ public class MySQLTableCreator {
                         + ")";
                 statement.executeUpdate(sql);
 
-                System.out.println("Tables Successfully Created");
+                logger.debug("Tables Successfully Created");
             }
         } catch (Exception e) {
             e.printStackTrace();

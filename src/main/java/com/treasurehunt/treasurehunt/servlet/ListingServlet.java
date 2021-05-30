@@ -4,9 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.storage.Storage;
 import com.treasurehunt.treasurehunt.db.gcs.GCS;
 import com.treasurehunt.treasurehunt.db.mysql.MySQL;
-import com.treasurehunt.treasurehunt.db.mysql.MySQLException;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -18,10 +19,14 @@ import javax.servlet.http.Part;
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 @MultipartConfig
 @WebServlet(name = "ListingServlet", urlPatterns = {"/listing"})
 public class ListingServlet extends HttpServlet {
+
+    private static final Logger logger = LoggerFactory.getLogger(ListingServlet.class);
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
@@ -60,7 +65,15 @@ public class ListingServlet extends HttpServlet {
         String sellerID = request.getParameter("seller_user_id");
 
         // Get fullName and address from userDB
-        String[] queryResult = MySQL.getSellerNameAddress(pool, sellerID);
+        String[] queryResult = new String[3];
+        try (Connection conn = pool.getConnection()) {
+            queryResult = MySQL.getSellerNameAddress(conn, sellerID);
+        } catch (SQLException e) {
+            logger.warn("Error while attempting to add new listing to MySQL db", e);
+            response.setStatus(500);
+            response.getWriter().write("Unable to successfully create listing! Please check the application logs for " +
+                    "more details.");
+        }
         String fullName = queryResult[0] + " " + queryResult[1];
         String address = queryResult[2];
 
@@ -83,7 +96,14 @@ public class ListingServlet extends HttpServlet {
         Listing listing = builder.build();
 
         // Add these info to MySQL database
-        MySQL.createListing(pool, listing);
+        try (Connection conn = pool.getConnection()) {
+            MySQL.createListing(conn, listing);
+        } catch (SQLException e) {
+            logger.warn("Error while attempting to add new listing to MySQL db", e);
+            response.setStatus(500);
+            response.getWriter().write("Unable to successfully create listing! Please check the application logs for " +
+                    "more details.");
+        }
 
         // ListingID is return as the respondBody
         // so no need to serialize Java objects into JSON string
@@ -98,14 +118,16 @@ public class ListingServlet extends HttpServlet {
             IOException {
 
         String listingId = request.getParameter("listing_id");
-        Listing listing;
+        Listing listing = new Listing();
 
         DataSource pool = (DataSource) request.getServletContext().getAttribute("mysql-pool");
-        try {
-            listing = MySQL.getListing(pool, listingId);
-        } catch (MySQLException e) {
-            e.printStackTrace();
-            throw new ServletException("Cannot get listings");
+        try (Connection conn = pool.getConnection()) {
+            listing = MySQL.getListing(conn, listingId);
+        } catch (SQLException e) {
+            logger.warn("Error while attempting to get listing from MySQL db", e);
+            response.setStatus(500);
+            response.getWriter().write("Unable to successfully get listing! Please check the application logs for " +
+                    "more details.");
         }
 
         response.setContentType("application/json;charset=UTF-8");

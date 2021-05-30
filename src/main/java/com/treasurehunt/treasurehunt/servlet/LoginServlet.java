@@ -19,5 +19,16 @@ public class LoginServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
             IOException {
 
+        // Read user_id and password from request
+
+        // Get salt from MySQL db that corresponds to user_id, build and verify password
+
+        // if match, generate token
+
+        // write token to response and send back
+
+        // word + word + number + symbol
+
+        // salt random
     }
 }
