@@ -19,9 +19,13 @@ public class User {
     @JsonProperty("email")
     private final String email;
     @JsonProperty("address")
-    private final String address;
+    private String address;
     @JsonProperty("password")
     private String password;
+    @JsonProperty("password_salt")
+    private String passwordSalt;
+    @JsonProperty("geo_location")
+    private GeocodeLocation geocodeLocation;
 
 
     private User(Builder builder) {
@@ -31,6 +35,8 @@ public class User {
         this.lastName = builder.lastName;
         this.email = builder.email;
         this.address = builder.address;
+        this.geocodeLocation = builder.geocodeLocation;
+
     }
 
     public String getUserId() {
@@ -43,6 +49,15 @@ public class User {
 
     public User setPassword(String password) {
         this.password = password;
+        return this;
+    }
+
+    public String getPasswordSalt() {
+        return passwordSalt;
+    }
+
+    public User setPasswordSalt(String passwordSalt) {
+        this.passwordSalt = passwordSalt;
         return this;
     }
 
@@ -62,6 +77,19 @@ public class User {
         return address;
     }
 
+    public User setAddress(String address) {
+        this.address = address;
+        return this;
+    }
+
+    public GeocodeLocation getGeocodeLocation() {
+        return geocodeLocation;
+    }
+
+    public User setGeocodeLocation(GeocodeLocation geocodeLocation) {
+        this.geocodeLocation = geocodeLocation;
+        return this;
+    }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -83,6 +111,9 @@ public class User {
 
         @JsonProperty("address")
         private String address;
+
+        @JsonProperty("geo_location")
+        private GeocodeLocation geocodeLocation;
 
         public Builder userId(String userId) {
             this.userId = userId;
@@ -115,6 +146,12 @@ public class User {
 
         public Builder address(String address) {
             this.address = address;
+            return this;
+        }
+
+
+        public Builder geocodeLocation(GeocodeLocation geocodeLocation) {
+            this.geocodeLocation = geocodeLocation;
             return this;
         }
 
