@@ -5,6 +5,7 @@ import com.google.cloud.storage.Storage;
 import com.treasurehunt.treasurehunt.db.gcs.GCS;
 import com.treasurehunt.treasurehunt.db.mysql.MySQL;
 import com.treasurehunt.treasurehunt.entity.Listing;
+import com.treasurehunt.treasurehunt.entity.User;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDate;
 
 @MultipartConfig
 @WebServlet(name = "ListingServlet", urlPatterns = {"/listing"})
@@ -62,35 +64,40 @@ public class ListingServlet extends HttpServlet {
         // Connect to MySQL
         DataSource pool = (DataSource) request.getServletContext().getAttribute("mysql-pool");
         // Get sellerID from request body as foreign key
-        String sellerID = request.getParameter("seller_user_id");
+        String sellerId = request.getParameter("seller_user_id");
 
-        // Get fullName and address from userDB
-        String[] queryResult = new String[3];
+        // Get fullName, address, and geolocation of seller from userDB
+        User user = null;
         try (Connection conn = pool.getConnection()) {
-            queryResult = MySQL.getSellerNameAddress(conn, sellerID);
+            user = MySQL.getUser(conn, sellerId);
         } catch (SQLException e) {
             logger.warn("Error while attempting to add new listing to MySQL db", e);
             response.setStatus(500);
             response.getWriter().write("Unable to successfully create listing! Please check the application logs for " +
                     "more details.");
         }
-        String fullName = queryResult[0] + " " + queryResult[1];
-        String address = queryResult[2];
 
+        // return if cannot find user in user db
+        if (user == null) {
+            logger.warn("Cannot find seller's info {} in user db", sellerId);
+            return;
+        }
 
-        // Read info from request body
+        // Read info from request body, and add fullName, address, and geolocation of seller
         Listing.Builder builder = new Listing.Builder();
         builder.setListingId(id)
                .setTitle(request.getParameter("title"))
                .setPrice(Double.parseDouble(request.getParameter("price")))
                .setCategory(request.getParameter("category"))
-               .setSellerId(sellerID)
+               .setSellerId(sellerId)
                .setDescription(request.getParameter("description"))
                .setItemCondition(request.getParameter("condition"))
                .setBrand(request.getParameter("brand"))
                .setPictureUrls(pictureArray.toString())
-               .setSellerName(fullName)
-               .setAddress(address);
+               .setSellerName(String.format("%s %s", user.getFirstName(), user.getLastName()))
+               .setAddress(user.getAddress())
+               .setDate(LocalDate.now().toString())
+               .setGeocodeLocation(user.getGeocodeLocation());
 
         // Build a java object which contains all listing info
         Listing listing = builder.build();
