@@ -10,6 +10,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,6 +22,7 @@ import java.util.Properties;
 public class GoogleMapsClient {
     private static final String GEOCODE_ADDRESS_URL = "https://maps.googleapis.com/maps/api/geocode/json?address=%s" +
             "&key=%s";
+    private static final Logger logger = LoggerFactory.getLogger(GoogleMapsClient.class);
 
     // Build the request url which will be used when calling the Google Maps Geocode API
     private String buildGeocodeUrl(String url, String address) throws GoogleMapsException {
@@ -58,7 +61,7 @@ public class GoogleMapsClient {
         ResponseHandler<String> responseHandler = response -> {
             int responseCode = response.getStatusLine().getStatusCode();
             if (responseCode != 200) {
-                System.out.println("Google Maps Response status: " + response.getStatusLine().getReasonPhrase());
+                logger.warn("Google Maps Response status: {}", response.getStatusLine().getReasonPhrase());
                 throw new GoogleMapsException("Failed to get result from Google Maps Geocode API");
             }
             HttpEntity entity = response.getEntity();
