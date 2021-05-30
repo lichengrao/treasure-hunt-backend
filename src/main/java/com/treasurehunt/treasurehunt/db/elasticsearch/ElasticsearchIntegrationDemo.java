@@ -13,8 +13,8 @@ import java.util.Map;
 public class ElasticsearchIntegrationDemo {
     public static void main(String[] args) {
         try {
-            ElasticsearchClient elasticsearchClient = new ElasticsearchClient();
-            try (RestHighLevelClient client = elasticsearchClient.client) {
+            // Start a client in try-with-resources so client will auto-close after execution
+            try (RestHighLevelClient client = ElasticsearchClient.createElasticsearchClient()) {
 
                 // Indexing
                 Map<String, Object> jsonMap = new HashMap<>();

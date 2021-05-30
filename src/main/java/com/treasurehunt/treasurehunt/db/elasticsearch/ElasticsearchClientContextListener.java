@@ -67,8 +67,7 @@ public class ElasticsearchClientContextListener implements ServletContextListene
         RestHighLevelClient client = (RestHighLevelClient) servletContext.getAttribute("es-client");
         if (client == null) {
             try {
-                ElasticsearchClient elasticsearchClient = new ElasticsearchClient();
-                client = elasticsearchClient.client;
+                client = ElasticsearchClient.createElasticsearchClient();
                 servletContext.setAttribute("es-client", client);
             } catch (IOException e) {
                 throw new RuntimeException("Unable to connect to Elasticsearch");

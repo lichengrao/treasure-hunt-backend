@@ -12,8 +12,7 @@ public class ElasticsearchIndexCreator {
         try {
             // Connect to Elasticsearch
             System.out.println("Connecting to Elasticsearch");
-            ElasticsearchClient elasticsearchClient = new ElasticsearchClient();
-            try (RestHighLevelClient client = elasticsearchClient.client) {
+            try (RestHighLevelClient client = ElasticsearchClient.createElasticsearchClient()) {
                 // Create Index Request
                 CreateIndexRequest request = new CreateIndexRequest("listings");
 
