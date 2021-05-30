@@ -18,9 +18,11 @@ public class User {
     @JsonProperty("email")
     private final String email;
     @JsonProperty("address")
-    private final String address;
+    private String address;
     @JsonProperty("password")
     private String password;
+    @JsonProperty("password_salt")
+    private String passwordSalt;
     @JsonProperty("geo_location")
     private GeocodeLocation geocodeLocation;
 
@@ -32,6 +34,7 @@ public class User {
         this.lastName = builder.lastName;
         this.email = builder.email;
         this.address = builder.address;
+        this.geocodeLocation = builder.geocodeLocation;
     }
 
     public String getUserId() {
@@ -44,6 +47,15 @@ public class User {
 
     public User setPassword(String password) {
         this.password = password;
+        return this;
+    }
+
+    public String getPasswordSalt() {
+        return passwordSalt;
+    }
+
+    public User setPasswordSalt(String passwordSalt) {
+        this.passwordSalt = passwordSalt;
         return this;
     }
 
@@ -61,6 +73,11 @@ public class User {
 
     public String getAddress() {
         return address;
+    }
+
+    public User setAddress(String address) {
+        this.address = address;
+        return this;
     }
 
     public GeocodeLocation getGeocodeLocation() {

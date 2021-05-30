@@ -2,6 +2,8 @@ package com.treasurehunt.treasurehunt.db.mysql;
 
 import com.treasurehunt.treasurehunt.entity.Listing;
 import com.treasurehunt.treasurehunt.entity.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,46 +17,58 @@ public class MySQL {
     private static final String USERS_DB = "users";
     private static final String LISTINGS_DB = "listings";
     private static final String SAVED_RECORDS_DB = "saved_records";
+    private static final Logger logger = LoggerFactory.getLogger(MySQL.class);
 
     // Create user in users db
-    public static String createUser(Connection conn, User user) throws MySQLException {
-        try {
-            // TODO
-            return "";
-        } catch (Exception e) {
+    public static boolean addUser(Connection conn, User user) throws MySQLException {
+
+        // Insert the new data to users db
+        String sql = String.format("INSERT IGNORE INTO %s VALUES(?, ?, ?, ?, ?, ?, ?, ?)", USERS_DB);
+
+        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+            statement.setString(1, user.getUserId());
+            statement.setString(2, user.getPassword());
+            statement.setString(3, user.getPasswordSalt());
+            statement.setString(4, user.getFirstName());
+            statement.setString(5, user.getLastName());
+            statement.setString(6, user.getEmail());
+            statement.setString(7, user.getAddress());
+            statement.setString(8, user.getGeocodeLocation().toString());
+
+            return statement.executeUpdate() == 1;
+        } catch (SQLException e) {
             e.printStackTrace();
-            throw new MySQLException("Failed to create User");
+            logger.warn("Failed to add {} to users db", user.getUserId());
+            return false;
         }
     }
 
     // Create new listing in listings db
     public static void createListing(Connection conn, Listing listing) throws MySQLException {
 
-        try {
-            // Insert the new data to listingsDB
-            String sql = "INSERT INTO listings VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        // Insert the new data to listings db
+        String sql = String.format("INSERT INTO %s VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", LISTINGS_DB);
 
-            try (PreparedStatement postListing = conn.prepareStatement(sql)) {
+        try (PreparedStatement postListing = conn.prepareStatement(sql)) {
 
-                postListing.setString(1, listing.getListingId());
-                postListing.setString(2, listing.getTitle());
-                postListing.setDouble(3, listing.getPrice());
-                postListing.setString(4, listing.getCategory());
-                postListing.setString(5, listing.getDescription());
-                postListing.setString(6, listing.getItemCondition());
-                postListing.setString(7, listing.getBrand());
-                postListing.setString(8, listing.getPictureUrls());
-                postListing.setString(9, listing.getSellerId());
-                postListing.setString(10, listing.getSellerName());
-                postListing.setString(11, listing.getAddress());
-                postListing.setTimestamp(12, new java.sql.Timestamp(System.currentTimeMillis()));
+            postListing.setString(1, listing.getListingId());
+            postListing.setString(2, listing.getTitle());
+            postListing.setDouble(3, listing.getPrice());
+            postListing.setString(4, listing.getCategory());
+            postListing.setString(5, listing.getDescription());
+            postListing.setString(6, listing.getItemCondition());
+            postListing.setString(7, listing.getBrand());
+            postListing.setString(8, listing.getPictureUrls());
+            postListing.setString(9, listing.getSellerId());
+            postListing.setString(10, listing.getSellerName());
+            postListing.setString(11, listing.getAddress());
+            postListing.setTimestamp(12, new java.sql.Timestamp(System.currentTimeMillis()));
 
-                postListing.executeUpdate();
+            postListing.executeUpdate();
 
-            }
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
-            throw new MySQLException("Failed to create listing");
+            logger.warn("Failed to add the following listing to listings db: {}", listing.getTitle());
         }
     }
 

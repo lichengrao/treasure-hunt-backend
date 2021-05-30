@@ -38,10 +38,12 @@ public class MySQLTableCreator {
                 sql = "CREATE TABLE users ( "
                         + "user_id VARCHAR(255) NOT NULL, "
                         + "password VARCHAR(255) NOT NULL, "
+                        + "password_salt VARCHAR(255) NOT NULL, "
                         + "first_name VARCHAR(255) NOT NULL, "
                         + "last_name VARCHAR(255) NOT NULL, "
                         + "email VARCHAR(255) NOT NULL, "
                         + "address VARCHAR(255), "
+                        + "geo_location VARCHAR(255), "
                         + "PRIMARY KEY (user_id) "
                         + ")";
                 statement.executeUpdate(sql);

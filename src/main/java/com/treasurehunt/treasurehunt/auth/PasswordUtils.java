@@ -1,5 +1,6 @@
 package com.treasurehunt.treasurehunt.auth;
 
+import com.treasurehunt.treasurehunt.entity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +53,17 @@ public class PasswordUtils {
         returnValue = Base64.getEncoder().encodeToString(securePassword);
 
         return returnValue;
+    }
+
+    // For user, generate new encrypted password
+    public static void generateSecurePasswordForUser(User user) {
+        // Generate salt and secure password for user
+        String newSalt = getSalt(30);
+        String newSecurePassword = generateSecurePassword(user.getPassword(), newSalt);
+
+        // Set the generated salt and secure password for user
+        user.setPasswordSalt(newSalt);
+        user.setPassword(newSecurePassword);
     }
 
     public static boolean verifyUserPassword(String providedPassword, String securePassword, String salt) {
