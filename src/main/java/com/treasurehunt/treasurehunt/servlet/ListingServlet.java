@@ -6,6 +6,8 @@ import com.treasurehunt.treasurehunt.db.gcs.GCS;
 import com.treasurehunt.treasurehunt.db.mysql.MySQL;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -19,14 +21,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @MultipartConfig
 @WebServlet(name = "ListingServlet", urlPatterns = {"/listing"})
 public class ListingServlet extends HttpServlet {
 
-    private static final Logger LOGGER = Logger.getLogger(ListingServlet.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(ListingServlet.class);
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
@@ -69,7 +69,7 @@ public class ListingServlet extends HttpServlet {
         try (Connection conn = pool.getConnection()) {
             queryResult = MySQL.getSellerNameAddress(conn, sellerID);
         } catch (SQLException e) {
-            LOGGER.log(Level.WARNING, "Error while attempting to add new listing to MySQL db", e);
+            logger.warn("Error while attempting to add new listing to MySQL db", e);
             response.setStatus(500);
             response.getWriter().write("Unable to successfully create listing! Please check the application logs for " +
                     "more details.");
@@ -99,7 +99,7 @@ public class ListingServlet extends HttpServlet {
         try (Connection conn = pool.getConnection()) {
             MySQL.createListing(conn, listing);
         } catch (SQLException e) {
-            LOGGER.log(Level.WARNING, "Error while attempting to add new listing to MySQL db", e);
+            logger.warn("Error while attempting to add new listing to MySQL db", e);
             response.setStatus(500);
             response.getWriter().write("Unable to successfully create listing! Please check the application logs for " +
                     "more details.");
@@ -124,7 +124,7 @@ public class ListingServlet extends HttpServlet {
         try (Connection conn = pool.getConnection()) {
             listing = MySQL.getListing(conn, listingId);
         } catch (SQLException e) {
-            LOGGER.log(Level.WARNING, "Error while attempting to get listing from MySQL db", e);
+            logger.warn("Error while attempting to get listing from MySQL db", e);
             response.setStatus(500);
             response.getWriter().write("Unable to successfully get listing! Please check the application logs for " +
                     "more details.");

@@ -6,12 +6,15 @@ import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ElasticsearchIndexCreator {
     public static void main(String[] args) {
+        Logger logger = LoggerFactory.getLogger(ElasticsearchIndexCreator.class);
         try {
             // Connect to Elasticsearch
-            System.out.println("Connecting to Elasticsearch");
+            logger.debug("Connecting to Elasticsearch");
             try (RestHighLevelClient client = ElasticsearchClient.createElasticsearchClient()) {
                 // Create Index Request
                 CreateIndexRequest request = new CreateIndexRequest("listings");
@@ -112,7 +115,7 @@ public class ElasticsearchIndexCreator {
                 // Synchronous Execution
                 CreateIndexResponse createIndexResponse = client.indices().create(request, RequestOptions.DEFAULT);
                 boolean acknowledged = createIndexResponse.isAcknowledged();
-                System.out.printf("Index \"listings\" creation status: %s%n", acknowledged);
+                logger.debug("Index \"listings\" creation status: {}", acknowledged);
             }
 
         } catch (Exception e) {
