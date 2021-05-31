@@ -3,7 +3,6 @@ package com.treasurehunt.treasurehunt.db.elasticsearch;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import com.treasurehunt.treasurehunt.entity.SearchListingsRequestBody;
-import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
@@ -40,10 +39,9 @@ public class Elasticsearch {
         SearchRequest searchRequest = new SearchRequest(LISTINGS_INDEX);
 
         // Configure searchRequest with data in the requestBody
-        String keywords = IOUtils.toString(requestBody.getReader());
 
         // TODO
-        MatchQueryBuilder matchQueryBuilder = new MatchQueryBuilder("description", keywords);
+        MatchQueryBuilder matchQueryBuilder = new MatchQueryBuilder("description", "keywords");
 
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
         sourceBuilder.query(matchQueryBuilder);
