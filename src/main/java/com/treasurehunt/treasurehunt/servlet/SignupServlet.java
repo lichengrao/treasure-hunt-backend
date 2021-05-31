@@ -43,7 +43,8 @@ public class SignupServlet extends HttpServlet {
         try {
             GeocodeResult geocodeResult = GoogleMapsClient.getGeocodeResult(user.getAddress());
             // Set formatted address and geocode location returned from Geocode API
-            user.setAddress(geocodeResult.getFormattedAddress()).setGeocodeLocation(geocodeResult.getGeocodeLocation());
+            user.setAddress(geocodeResult.getFormattedAddress()).setGeocodeLocation(geocodeResult.getGeocodeLocation())
+                .setCityAndState(geocodeResult.getCityAndState());
         } catch (GoogleMapsException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().print(String.format("Invalid address: %s%n", user.getAddress()));

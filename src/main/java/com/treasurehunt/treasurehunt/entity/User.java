@@ -26,6 +26,8 @@ public class User {
     private String passwordSalt;
     @JsonProperty("geo_location")
     private GeocodeLocation geocodeLocation;
+    @JsonProperty("city_and_state")
+    private String cityAndState;
 
 
     private User(Builder builder) {
@@ -37,6 +39,7 @@ public class User {
         this.address = builder.address;
         this.geocodeLocation = builder.geocodeLocation;
         this.passwordSalt = builder.passwordSalt;
+        this.cityAndState = builder.cityAndState;
     }
 
     public String getUserId() {
@@ -91,6 +94,15 @@ public class User {
         return this;
     }
 
+    public User setCityAndState(String cityAndState) {
+        this.cityAndState = cityAndState;
+        return this;
+    }
+
+    public String getCityAndState() {
+        return cityAndState;
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Builder {
@@ -117,6 +129,9 @@ public class User {
 
         @JsonProperty("geo_location")
         private GeocodeLocation geocodeLocation;
+
+        @JsonProperty("city_and_state")
+        private String cityAndState;
 
         public Builder userId(String userId) {
             this.userId = userId;
@@ -159,6 +174,11 @@ public class User {
 
         public Builder geocodeLocation(GeocodeLocation geocodeLocation) {
             this.geocodeLocation = geocodeLocation;
+            return this;
+        }
+
+        public Builder cityAndState(String cityAndState) {
+            this.cityAndState = cityAndState;
             return this;
         }
 

@@ -2,6 +2,7 @@ package com.treasurehunt.treasurehunt.servlet;
 
 import com.treasurehunt.treasurehunt.db.mysql.MySQL;
 import com.treasurehunt.treasurehunt.entity.SaveRequestBody;
+import com.treasurehunt.treasurehunt.utils.JwtTokenMissingException;
 import com.treasurehunt.treasurehunt.utils.ServletUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,14 @@ public class SaveServlet extends HttpServlet {
             IOException {
 
         // Verify token
-        String authorizedUserId = ServletUtil.getAuthorizedUserIdFromRequest(request);
+        String authorizedUserId;
+        try {
+            authorizedUserId = ServletUtil.getAuthorizedUserIdFromRequest(request);
+        } catch (JwtTokenMissingException e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Invalid token");
+            return;
+        }
 
         // Read data from request
         SaveRequestBody body = ServletUtil.readRequestBody(SaveRequestBody.class, request);
@@ -56,7 +64,14 @@ public class SaveServlet extends HttpServlet {
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException,
             IOException {
         // Verify token
-        String authorizedUserId = ServletUtil.getAuthorizedUserIdFromRequest(request);
+        String authorizedUserId;
+        try {
+            authorizedUserId = ServletUtil.getAuthorizedUserIdFromRequest(request);
+        } catch (JwtTokenMissingException e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Invalid token");
+            return;
+        }
 
         // Read data from request
         SaveRequestBody body = ServletUtil.readRequestBody(SaveRequestBody.class, request);

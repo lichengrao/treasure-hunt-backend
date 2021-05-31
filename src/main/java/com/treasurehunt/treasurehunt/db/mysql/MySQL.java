@@ -27,7 +27,7 @@ public class MySQL {
     public static boolean addUser(Connection conn, User user) {
 
         // Insert the new data to users db
-        String sql = String.format("INSERT IGNORE INTO %s VALUES(?, ?, ?, ?, ?, ?, ?, ?)", USERS_DB);
+        String sql = String.format("INSERT IGNORE INTO %s VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)", USERS_DB);
 
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             statement.setString(1, user.getUserId());
@@ -38,6 +38,7 @@ public class MySQL {
             statement.setString(6, user.getEmail());
             statement.setString(7, user.getAddress());
             statement.setString(8, new ObjectMapper().writeValueAsString(user.getGeocodeLocation()));
+            statement.setString(9, user.getCityAndState());
 
             return statement.executeUpdate() == 1;
         } catch (SQLException | JsonProcessingException e) {
@@ -90,13 +91,14 @@ public class MySQL {
     }
 
     // Delete an existing listing in listings db
-    public static void deleteListing(Connection conn, String listingId) throws MySQLException {
+    public static void deleteListing(Connection conn, String sellerId, String listingId) throws MySQLException {
         // TODO: Last edited by Ruichen
 
         try {
-            String sql = "DELETE FROM listings WHERE listing_id = ?";
+            String sql = "DELETE FROM listings WHERE seller_id = ? AND listing_id = ?";
             PreparedStatement statement = conn.prepareStatement(sql);
-            statement.setString(1, listingId);
+            statement.setString(1, sellerId);
+            statement.setString(2, listingId);
             statement.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();

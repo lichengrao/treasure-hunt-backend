@@ -44,6 +44,7 @@ public class MySQLTableCreator {
                         + "email VARCHAR(255) NOT NULL, "
                         + "address VARCHAR(255), "
                         + "geo_location VARCHAR(255), "
+                        + "city_and_state VARCHAR(255), "
                         + "PRIMARY KEY (user_id) "
                         + ")";
                 statement.executeUpdate(sql);
