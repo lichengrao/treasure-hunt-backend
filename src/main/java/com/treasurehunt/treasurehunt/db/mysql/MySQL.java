@@ -162,11 +162,12 @@ public class MySQL {
     public static void saveListing(Connection conn, String userId, String listingId) throws MySQLException {
         try {
             // Build and execute SQL statement
-            // TODO
-            String sql = "";
+            String sql = String.format("INSERT IGNORE INTO %s (user_id, listing_id) VALUES (?, ?)", SAVED_RECORDS_DB);
             PreparedStatement statement = conn.prepareStatement(sql);
+            statement.setString(1, userId);
+            statement.setString(2, listingId);
             statement.executeUpdate();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
             throw new MySQLException("Failed to save listing");
         }

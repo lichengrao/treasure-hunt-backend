@@ -35,7 +35,7 @@ public class ListingServlet extends HttpServlet {
             IOException {
         // Verify token
         String authorizedUserId = ServletUtil.getAuthorizedUserIdFromRequest(request);
-        // Get sellerID from request body as foreign key
+        // Get sellerId from request body as foreign key
         String sellerId = request.getParameter("seller_user_id");
         // Verify the two id's are equal
         if (!authorizedUserId.equals(sellerId)) {
@@ -44,7 +44,7 @@ public class ListingServlet extends HttpServlet {
             return;
         }
 
-        // Get UUID as ListingID
+        // Get UUID as ListingId
         String listingId = String.valueOf(System.currentTimeMillis());
 
         // Upload pictures and get urls
@@ -94,7 +94,7 @@ public class ListingServlet extends HttpServlet {
 
         // Read info from request body, and add fullName, address, and geolocation of seller
         Listing.Builder builder = new Listing.Builder();
-        builder.setListingId(sellerId)
+        builder.setListingId(listingId)
                .setTitle(request.getParameter("title"))
                .setPrice(Double.parseDouble(request.getParameter("price")))
                .setCategory(request.getParameter("category"))
@@ -111,7 +111,7 @@ public class ListingServlet extends HttpServlet {
         Listing listing = builder.build();
 
         boolean isListingAdded = false;
-        // Add these info to MySQL database
+        // Add listing obj to MySQL database
         try (Connection conn = pool.getConnection()) {
             isListingAdded = MySQL.createListing(conn, listing);
         } catch (SQLException e) {
@@ -123,9 +123,10 @@ public class ListingServlet extends HttpServlet {
 
         if (!isListingAdded) {
             response.setStatus(HttpServletResponse.SC_CONFLICT);
+            response.getWriter().print("Unable to create listing");
             return;
         }
-        // ListingID is return as the respondBody
+        // ListingId is return as the respondBody
         // so no need to serialize Java objects into JSON string
         response.setStatus(200);
         response.setContentType("application/json;charset=UTF-8");
