@@ -2,6 +2,7 @@ package com.treasurehunt.treasurehunt.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.storage.Storage;
+import com.treasurehunt.treasurehunt.db.elasticsearch.Elasticsearch;
 import com.treasurehunt.treasurehunt.db.gcs.GCS;
 import com.treasurehunt.treasurehunt.db.mysql.MySQL;
 import com.treasurehunt.treasurehunt.entity.DeleteListingRequestBody;
@@ -136,6 +137,8 @@ public class ListingServlet extends HttpServlet {
             response.getWriter().print("Unable to create listing");
             return;
         }
+
+
         // ListingId is return as the respondBody
         // so no need to serialize Java objects into JSON string
         response.setStatus(200);

@@ -46,16 +46,17 @@ public class Elasticsearch {
         sourceBuilder.sort(new FieldSortBuilder("price").order(SortOrder.ASC));
 
         // Configure searchQuery and filters
-        if (requestBody.getCategory()!=null) {
+        if (requestBody.getCategory() != null) {
             TermQueryBuilder termQueryBuilder = new TermQueryBuilder("category", "keywords");
             sourceBuilder.query(termQueryBuilder);
-        } else if (requestBody.getKeyword()!=null && requestBody.getFilters().isEmpty()) {
+        } else if (requestBody.getKeyword() != null && requestBody.getMaxPrice() == null) {
             MatchQueryBuilder matchQueryBuilder = new MatchQueryBuilder("description", "text");
             sourceBuilder.query(matchQueryBuilder);
-        } else if (requestBody.getKeyword()!=null && !requestBody.getFilters().isEmpty()) {
+        } else if (requestBody.getKeyword() != null && requestBody.getMaxPrice() != null) {
             MatchQueryBuilder matchQueryBuilder = new MatchQueryBuilder("description", "text");
             sourceBuilder.query(matchQueryBuilder);
             // TODO filter
+
 
         }
         searchRequest.source(sourceBuilder);
