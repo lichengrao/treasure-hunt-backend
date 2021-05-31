@@ -142,23 +142,34 @@ public class MySQL {
 
     // Get listings saved by user
     public static List<Listing> getSavedListings(Connection conn, String userId) throws MySQLException {
-        // Build a return object
+
         List<Listing> savedListings = new ArrayList<>();
 
         try {
+            // query from listings DB
+            String sql = "SELECT listings.listing_id, picture_urls, title, price, city_and_state, description "
+                    + "FROM listings "
+                    + "INNER JOIN saved_records ON saved_records.listing_id = listings.listing_id "
+                    + "WHERE saved_records.user_id = ?";
+            PreparedStatement statement = conn.prepareStatement(sql);
+            statement.setString(1, userId);
 
-            // Query saved_records DB for userId == user_id and query listings DB with listing_id's
-            // Use JOIN to optimize
-            // TODO
-
-            // Add listings in ResultSet to savedListings
-            // TODO
-
-            // Return savedListings
+            // Add listings in ResultSet to myListings
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                Listing.Builder builder = new Listing.Builder();
+                builder.setListingId(rs.getString("listing_id"))
+                       .setPictureUrls(rs.getString("picture_urls"))
+                       .setTitle(rs.getString("title"))
+                       .setPrice(rs.getDouble("price"))
+                       .setCityAndState(rs.getString("city_and_state"))
+                       .setDescription(rs.getString("description"));
+                savedListings.add(builder.build());
+            }
             return savedListings;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new MySQLException("Failed to get saved listings");
+            throw new MySQLException("Failed to get my listings");
         }
     }
 
@@ -215,11 +226,14 @@ public class MySQL {
                        .setSellerId(rs.getString("seller_id"))
                        .setSellerName(rs.getString("seller_name"))
                        .setAddress(rs.getString("address"))
-                       .setDate(rs.getString("date"));
+                       .setDate(rs.getString("date"))
+                       .setGeocodeLocation(new ObjectMapper()
+                               .readValue(rs.getString("geo_location"), GeocodeLocation.class))
+                       .setCityAndState(rs.getString("city_and_state"));
                 listing = builder.build();
             }
             return listing;
-        } catch (SQLException e) {
+        } catch (SQLException | JsonProcessingException e) {
             e.printStackTrace();
             throw new MySQLException("Failed to get listing from DB");
         }
@@ -244,6 +258,7 @@ public class MySQL {
                         .address(rs.getString("address"))
                         .geocodeLocation(new ObjectMapper()
                                 .readValue(rs.getString("geo_location"), GeocodeLocation.class))
+                        .cityAndState(rs.getString("city_and_state"))
                         .build();
             } else {
                 logger.info("User does not exist");
