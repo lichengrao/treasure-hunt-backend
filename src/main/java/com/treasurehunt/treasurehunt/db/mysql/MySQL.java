@@ -112,7 +112,7 @@ public class MySQL {
 
         try {
             // query from listings DB
-            String sql = "SELECT listing_id, picture_urls, title, price, date "
+            String sql = "SELECT listing_id, picture_urls, title, price, date, description "
                     + "FROM listings "
                     + "WHERE seller_id = ?";
             PreparedStatement statement = conn.prepareStatement(sql);
@@ -120,13 +120,14 @@ public class MySQL {
 
             // Add listings in ResultSet to myListings
             ResultSet rs = statement.executeQuery();
-            if (rs.next()) {
+            while (rs.next()) {
                 Listing.Builder builder = new Listing.Builder();
                 builder.setListingId(rs.getString("listing_id"))
                        .setPictureUrls(rs.getString("picture_urls"))
                        .setTitle(rs.getString("title"))
                        .setPrice(rs.getDouble("price"))
-                       .setDate(rs.getString("date"));
+                       .setDate(rs.getString("date"))
+                       .setDescription(rs.getString("description"));
                 myListings.add(builder.build());
             }
             return myListings;

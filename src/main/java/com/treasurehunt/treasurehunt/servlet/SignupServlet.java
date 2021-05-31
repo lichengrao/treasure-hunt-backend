@@ -26,12 +26,6 @@ public class SignupServlet extends HttpServlet {
     private static final Logger logger = LoggerFactory.getLogger(SignupServlet.class);
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,
-            IOException {
-        response.getWriter().print("Hello Signup");
-    }
-
-    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
             IOException {
         // Reader user data from the request body
@@ -70,6 +64,5 @@ public class SignupServlet extends HttpServlet {
         if (!isUserAdded) {
             response.setStatus(HttpServletResponse.SC_CONFLICT);
         }
-
     }
 }

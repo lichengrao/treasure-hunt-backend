@@ -158,10 +158,34 @@ public class ListingServlet extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         super.doPut(req, resp);
+
+        // TODO
     }
 
     @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doDelete(req, resp);
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException,
+            IOException {
+        String listingId = request.getParameter("listing_id");
+        DataSource pool = (DataSource) request.getServletContext().getAttribute("mysql-pool");
+        try (Connection conn = pool.getConnection()) {
+            // delete from MySQL
+            MySQL.deleteListing(conn, listingId);
+
+            // delete from ES
+            // TODO
+
+            // delete from GCS
+            // TODO
+
+        } catch (SQLException e) {
+            logger.warn("Error while attempting to delete listing from MySQL db", e);
+            response.setStatus(500);
+            response.getWriter()
+                    .write("Unable to successfully delete listing! Please check the application logs for more details");
+            return;
+        }
+        response.setStatus(200);
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().print("Successfully deleted a listing!");
     }
 }

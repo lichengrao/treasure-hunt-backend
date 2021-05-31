@@ -13,11 +13,6 @@ public class SavedListingsServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,
             IOException {
         response.getWriter().print("Hello Saved Listings");
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
-            IOException {
-
+        // TODO
     }
 }

@@ -52,10 +52,8 @@ public class AuthUtils {
             // You just get to ‘inspect’ the JWT data for key discovery before the parser validates it.
 
             return result.getBody().getSubject();
-        } catch (MalformedJwtException e) {
-            return "Invalid Token";
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new JwtTokenMissingException("Invalid token");
         }
     }
 

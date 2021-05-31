@@ -22,12 +22,6 @@ public class SaveServlet extends HttpServlet {
     private static final Logger logger = LoggerFactory.getLogger(SaveServlet.class);
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,
-            IOException {
-        response.getWriter().print("Hello Save");
-    }
-
-    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
             IOException {
 
