@@ -30,13 +30,16 @@ public class Listing {
     @JsonProperty("brand")
     private String brand;
     @JsonProperty("address")
-    @JsonRawValue
     private String address;
     @JsonProperty("pictureUrls")
     @JsonRawValue
     private String pictureUrls;
     @JsonProperty("date")
     private String date;
+    @JsonProperty("geo_location")
+    private GeocodeLocation geocodeLocation;
+    @JsonProperty("city_and_state")
+    private String cityAndState;
 
     public Listing(Builder builder) {
         this.listingId = builder.listingId;
@@ -51,6 +54,8 @@ public class Listing {
         this.brand = builder.brand;
         this.pictureUrls = builder.pictureUrls;
         this.date = builder.date;
+        this.geocodeLocation = builder.geocodeLocation;
+        this.cityAndState = builder.cityAndState;
     }
 
     public Listing() {
@@ -104,6 +109,14 @@ public class Listing {
         return date;
     }
 
+    public String getCityAndState() {
+        return cityAndState;
+    }
+
+    public GeocodeLocation getGeocodeLocation() {
+        return geocodeLocation;
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Builder {
@@ -119,6 +132,8 @@ public class Listing {
         private String address;
         private String pictureUrls;
         private String date;
+        private GeocodeLocation geocodeLocation;
+        private String cityAndState;
 
         public Builder setListingId(String listingId) {
             this.listingId = listingId;
@@ -177,6 +192,16 @@ public class Listing {
 
         public Builder setDate(String date) {
             this.date = date;
+            return this;
+        }
+
+        public Builder setGeocodeLocation(GeocodeLocation geocodeLocation) {
+            this.geocodeLocation = geocodeLocation;
+            return this;
+        }
+
+        public Builder setCityAndState(String cityAndState) {
+            this.cityAndState = cityAndState;
             return this;
         }
 

@@ -4,7 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.storage.Storage;
 import com.treasurehunt.treasurehunt.db.gcs.GCS;
 import com.treasurehunt.treasurehunt.db.mysql.MySQL;
+import com.treasurehunt.treasurehunt.entity.DeleteListingRequestBody;
 import com.treasurehunt.treasurehunt.entity.Listing;
+import com.treasurehunt.treasurehunt.entity.User;
+import com.treasurehunt.treasurehunt.utils.JwtTokenMissingException;
+import com.treasurehunt.treasurehunt.utils.ServletUtil;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +35,26 @@ public class ListingServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
             IOException {
-        // Get UUID as ListingID
-        String id = String.valueOf(System.currentTimeMillis());
+        // Verify token
+        String authorizedUserId;
+        try {
+            authorizedUserId = ServletUtil.getAuthorizedUserIdFromRequest(request);
+        } catch (JwtTokenMissingException e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Invalid token");
+            return;
+        }
+        // Get sellerId from request body as foreign key
+        String sellerId = request.getParameter("seller_user_id");
+        // Verify the two id's are equal
+        if (!authorizedUserId.equals(sellerId)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().print("Token invalid");
+            return;
+        }
+
+        // Get UUID as ListingId
+        String listingId = String.valueOf(System.currentTimeMillis());
 
         // Upload pictures and get urls
         JSONObject pictureArray = new JSONObject();
@@ -61,43 +83,47 @@ public class ListingServlet extends HttpServlet {
 
         // Connect to MySQL
         DataSource pool = (DataSource) request.getServletContext().getAttribute("mysql-pool");
-        // Get sellerID from request body as foreign key
-        String sellerID = request.getParameter("seller_user_id");
 
-        // Get fullName and address from userDB
-        String[] queryResult = new String[3];
+        // Get fullName, address, and geolocation of seller from userDB
+        User user = null;
         try (Connection conn = pool.getConnection()) {
-            queryResult = MySQL.getSellerNameAddress(conn, sellerID);
+            user = MySQL.getUser(conn, sellerId);
         } catch (SQLException e) {
             logger.warn("Error while attempting to add new listing to MySQL db", e);
             response.setStatus(500);
             response.getWriter().write("Unable to successfully create listing! Please check the application logs for " +
                     "more details.");
         }
-        String fullName = queryResult[0] + " " + queryResult[1];
-        String address = queryResult[2];
 
+        // return if cannot find user in user db
+        if (user == null) {
+            logger.warn("Cannot find seller's info {} in user db", sellerId);
+            return;
+        }
 
-        // Read info from request body
+        // Read info from request body, and add fullName, address, and geolocation of seller
         Listing.Builder builder = new Listing.Builder();
-        builder.setListingId(id)
-                .setTitle(request.getParameter("title"))
-                .setPrice(Double.parseDouble(request.getParameter("price")))
-                .setCategory(request.getParameter("category"))
-                .setSellerId(sellerID)
-                .setDescription(request.getParameter("description"))
-                .setItemCondition(request.getParameter("condition"))
-                .setBrand(request.getParameter("brand"))
-                .setPictureUrls(pictureArray.toString())
-                .setSellerName(fullName)
-                .setAddress(address);
+        builder.setListingId(listingId)
+               .setTitle(request.getParameter("title"))
+               .setPrice(Double.parseDouble(request.getParameter("price")))
+               .setCategory(request.getParameter("category"))
+               .setSellerId(sellerId)
+               .setDescription(request.getParameter("description"))
+               .setItemCondition(request.getParameter("item_condition"))
+               .setBrand(request.getParameter("brand"))
+               .setPictureUrls(pictureArray.toString())
+               .setSellerName(String.format("%s %s", user.getFirstName(), user.getLastName()))
+               .setAddress(user.getAddress())
+               .setGeocodeLocation(user.getGeocodeLocation())
+               .setCityAndState(user.getCityAndState());
 
         // Build a java object which contains all listing info
         Listing listing = builder.build();
 
-        // Add these info to MySQL database
+        boolean isListingAdded = false;
+        // Add listing obj to MySQL database
         try (Connection conn = pool.getConnection()) {
-            MySQL.createListing(conn, listing);
+            isListingAdded = MySQL.createListing(conn, listing);
         } catch (SQLException e) {
             logger.warn("Error while attempting to add new listing to MySQL db", e);
             response.setStatus(500);
@@ -105,11 +131,16 @@ public class ListingServlet extends HttpServlet {
                     "more details.");
         }
 
-        // ListingID is return as the respondBody
+        if (!isListingAdded) {
+            response.setStatus(HttpServletResponse.SC_CONFLICT);
+            response.getWriter().print("Unable to create listing");
+            return;
+        }
+        // ListingId is return as the respondBody
         // so no need to serialize Java objects into JSON string
         response.setStatus(200);
         response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().print(id);
+        response.getWriter().print(listingId);
 
     }
 
@@ -132,5 +163,65 @@ public class ListingServlet extends HttpServlet {
 
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().print(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(listing));
+    }
+
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        super.doPut(req, resp);
+
+        // TODO
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException,
+            IOException {
+        // Get authorizedUserId from token
+        String authorizedUserId;
+        try {
+            authorizedUserId = ServletUtil.getAuthorizedUserIdFromRequest(request);
+        } catch (JwtTokenMissingException e) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Invalid token");
+            return;
+        }
+
+        // Parse request body
+        DeleteListingRequestBody body = ServletUtil.readRequestBody(DeleteListingRequestBody.class, request);
+        if (body == null) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+        // Verify the two id's are equal
+        if (!authorizedUserId.equals(body.getUserId())) {
+            logger.warn("Unauthorized: user_id {} is not the same as authorized user {}", body
+                    .getUserId(), authorizedUserId);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().print("Token invalid");
+            return;
+        }
+
+        String listingId = body.getListingId();
+        String userId = body.getUserId();
+        DataSource pool = (DataSource) request.getServletContext().getAttribute("mysql-pool");
+        try (Connection conn = pool.getConnection()) {
+            // delete from MySQL
+            MySQL.deleteListing(conn, userId, listingId);
+        } catch (SQLException e) {
+            logger.warn("Error while attempting to delete listing from MySQL db", e);
+            response.setStatus(500);
+            response.getWriter()
+                    .write("Unable to successfully delete listing! Please check the application logs for more details");
+            return;
+        }
+
+        // delete from ES
+        // TODO
+
+        // delete from GCS
+        // TODO
+
+        response.setStatus(200);
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().print("Successfully deleted a listing!");
     }
 }

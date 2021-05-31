@@ -1,4 +1,4 @@
-package com.treasurehunt.treasurehunt.auth;
+package com.treasurehunt.treasurehunt.utils;
 
 import com.treasurehunt.treasurehunt.entity.User;
 import org.slf4j.Logger;

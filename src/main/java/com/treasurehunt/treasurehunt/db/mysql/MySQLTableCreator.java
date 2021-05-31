@@ -44,6 +44,7 @@ public class MySQLTableCreator {
                         + "email VARCHAR(255) NOT NULL, "
                         + "address VARCHAR(255), "
                         + "geo_location VARCHAR(255), "
+                        + "city_and_state VARCHAR(255), "
                         + "PRIMARY KEY (user_id) "
                         + ")";
                 statement.executeUpdate(sql);
@@ -61,6 +62,8 @@ public class MySQLTableCreator {
                         + "seller_name VARCHAR(255) NOT NULL, "
                         + "address VARCHAR(255) NOT NULL, "
                         + "date TIMESTAMP, "
+                        + "geo_location VARCHAR(255) NOT NULL, "
+                        + "city_and_state VARCHAR(255) NOT NULL, "
                         + "PRIMARY KEY (listing_id), "
                         + "FOREIGN KEY (seller_id) REFERENCES users(user_id) ON DELETE CASCADE"
                         + ")";
@@ -70,8 +73,7 @@ public class MySQLTableCreator {
                         + "user_id VARCHAR(255) NOT NULL,"
                         + "listing_id VARCHAR(255) NOT NULL,"
                         + "PRIMARY KEY (user_id, listing_id),"
-                        + "FOREIGN KEY (user_id) REFERENCES users(user_id),"
-                        + "FOREIGN KEY (listing_id) REFERENCES listings(listing_id)"
+                        + "FOREIGN KEY (user_id) REFERENCES users(user_id) "
                         + ")";
                 statement.executeUpdate(sql);
 

@@ -25,7 +25,7 @@ public class GoogleMapsClient {
     private static final Logger logger = LoggerFactory.getLogger(GoogleMapsClient.class);
 
     // Build the request url which will be used when calling the Google Maps Geocode API
-    private String buildGeocodeUrl(String url, String address) throws GoogleMapsException {
+    private static String buildGeocodeUrl(String url, String address) throws GoogleMapsException {
         // If address is empty string, throw error
         if (address.equals("")) {
             throw new GoogleMapsException("Address cannot be empty");
@@ -55,7 +55,7 @@ public class GoogleMapsClient {
     }
 
     // Send HTTP request to Google Maps Geocode API based on the given URL, and returns the body of the HTTP response
-    private String getRawGeocodeResult(String url) throws GoogleMapsException {
+    private static String getRawGeocodeResult(String url) throws GoogleMapsException {
 
         // Define the response handler to parse and return HTTP response body returned from Google Maps
         ResponseHandler<String> responseHandler = response -> {
@@ -83,7 +83,7 @@ public class GoogleMapsClient {
     }
 
     // Convert JSON format data returned from Google Maps to a GeocodeResult object
-    public GeocodeResult getGeocodeResult(String address) throws GoogleMapsException {
+    public static GeocodeResult getGeocodeResult(String address) throws GoogleMapsException {
         String data = getRawGeocodeResult(buildGeocodeUrl(GEOCODE_ADDRESS_URL, address));
         ObjectMapper mapper = new ObjectMapper();
         try {
