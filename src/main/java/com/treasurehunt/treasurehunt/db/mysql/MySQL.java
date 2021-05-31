@@ -188,35 +188,6 @@ public class MySQL {
         }
     }
 
-    // Need to change this to getUser
-    // TODO
-    public static String[] getSellerNameAddress(Connection conn, String SellerID) throws MySQLException {
-
-        // Hardcoded, Change later
-        // TODO
-        String[] result = new String[3];
-
-        try {
-            String sql = "SELECT first_name, last_name, address FROM users WHERE user_id = ?";
-
-            try (PreparedStatement statement = conn.prepareStatement(sql)) {
-                statement.setString(1, SellerID);
-                ResultSet rs = statement.executeQuery();
-
-                if (rs.next()) {
-                    result[0] = rs.getString("first_name");
-                    result[1] = rs.getString("last_name");
-                    result[2] = rs.getString("address");
-                }
-
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new MySQLException("Failed to get user from DB");
-        }
-        return result;
-    }
-
     // Get Listing from listings db
     public static Listing getListing(Connection conn, String listingId) throws MySQLException {
         Listing listing = new Listing();
