@@ -15,6 +15,7 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -39,18 +40,24 @@ public class Elasticsearch {
         SearchRequest searchRequest = new SearchRequest(LISTINGS_INDEX);
 
         // Configure searchRequest with data in the requestBody
-
-        // TODO
-        MatchQueryBuilder matchQueryBuilder = new MatchQueryBuilder("description", "keywords");
-
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        sourceBuilder.query(matchQueryBuilder);
         sourceBuilder.size(30);
         sourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
-        // Sort the search result
         sourceBuilder.sort(new FieldSortBuilder("price").order(SortOrder.ASC));
-        // filter
 
+        // Configure searchQuery and filters
+        if (requestBody.getCategory()!=null) {
+            TermQueryBuilder termQueryBuilder = new TermQueryBuilder("category", "keywords");
+            sourceBuilder.query(termQueryBuilder);
+        } else if (requestBody.getKeyword()!=null && requestBody.getFilters().isEmpty()) {
+            MatchQueryBuilder matchQueryBuilder = new MatchQueryBuilder("description", "text");
+            sourceBuilder.query(matchQueryBuilder);
+        } else if (requestBody.getKeyword()!=null && !requestBody.getFilters().isEmpty()) {
+            MatchQueryBuilder matchQueryBuilder = new MatchQueryBuilder("description", "text");
+            sourceBuilder.query(matchQueryBuilder);
+            // TODO filter
+
+        }
         searchRequest.source(sourceBuilder);
 
         // return searchRequest object
