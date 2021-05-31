@@ -169,7 +169,7 @@ public class MySQL {
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new MySQLException("Failed to save listing");
+            throw new MySQLException("Failed to save Listing");
         }
     }
 
@@ -178,12 +178,12 @@ public class MySQL {
         // TODO: Last edited by Ruichen
 
         try {
-            String sql = "DELETE FROM saved_records WHERE user_id = ? AND listing_id = ?";
+            String sql = String.format("DELETE FROM %s WHERE user_id = ? AND listing_id = ?", SAVED_RECORDS_DB);
             PreparedStatement statement = conn.prepareStatement(sql);
             statement.setString(1, userId);
             statement.setString(2, listingId);
             statement.executeUpdate();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
             throw new MySQLException("Failed to unsave Listing");
         }

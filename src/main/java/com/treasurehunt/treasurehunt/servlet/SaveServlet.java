@@ -57,4 +57,34 @@ public class SaveServlet extends HttpServlet {
             throw new ServletException(e);
         }
     }
+
+    @Override
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException,
+            IOException {
+        // Verify token
+        String authorizedUserId = ServletUtil.getAuthorizedUserIdFromRequest(request);
+
+        // Read data from request
+        SaveRequestBody body = ServletUtil.readRequestBody(SaveRequestBody.class, request);
+        if (body == null) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
+        // Verify the two id's are equal
+        if (!authorizedUserId.equals(body.getUserId())) {
+            logger.warn("Unauthorized: user_id {} is not the same as authorized user {}", body
+                    .getUserId(), authorizedUserId);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().print("Token invalid");
+            return;
+        }
+        // Get a connection from MySQL connection pool
+        DataSource pool = (DataSource) request.getServletContext().getAttribute("mysql-pool");
+        try (Connection conn = pool.getConnection()) {
+            // Unsave the listing
+            MySQL.unsaveListing(conn, body.getUserId(), body.getListingId());
+        } catch (SQLException e) {
+            throw new ServletException(e);
+        }
+    }
 }
