@@ -45,7 +45,7 @@ public class ListingServlet extends HttpServlet {
         }
 
         // Get UUID as ListingID
-        String id = String.valueOf(System.currentTimeMillis());
+        String listingId = String.valueOf(System.currentTimeMillis());
 
         // Upload pictures and get urls
         JSONObject pictureArray = new JSONObject();
@@ -94,13 +94,13 @@ public class ListingServlet extends HttpServlet {
 
         // Read info from request body, and add fullName, address, and geolocation of seller
         Listing.Builder builder = new Listing.Builder();
-        builder.setListingId(id)
+        builder.setListingId(sellerId)
                .setTitle(request.getParameter("title"))
                .setPrice(Double.parseDouble(request.getParameter("price")))
                .setCategory(request.getParameter("category"))
                .setSellerId(sellerId)
                .setDescription(request.getParameter("description"))
-               .setItemCondition(request.getParameter("condition"))
+               .setItemCondition(request.getParameter("item_condition"))
                .setBrand(request.getParameter("brand"))
                .setPictureUrls(pictureArray.toString())
                .setSellerName(String.format("%s %s", user.getFirstName(), user.getLastName()))
@@ -110,10 +110,10 @@ public class ListingServlet extends HttpServlet {
         // Build a java object which contains all listing info
         Listing listing = builder.build();
 
-        boolean isListingAdded;
+        boolean isListingAdded = false;
         // Add these info to MySQL database
         try (Connection conn = pool.getConnection()) {
-            MySQL.createListing(conn, listing);
+            isListingAdded = MySQL.createListing(conn, listing);
         } catch (SQLException e) {
             logger.warn("Error while attempting to add new listing to MySQL db", e);
             response.setStatus(500);
@@ -121,11 +121,15 @@ public class ListingServlet extends HttpServlet {
                     "more details.");
         }
 
+        if (!isListingAdded) {
+            response.setStatus(HttpServletResponse.SC_CONFLICT);
+            return;
+        }
         // ListingID is return as the respondBody
         // so no need to serialize Java objects into JSON string
         response.setStatus(200);
         response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().print(id);
+        response.getWriter().print(listingId);
 
     }
 
