@@ -10,7 +10,9 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
 import javax.sql.DataSource;
 import java.io.IOException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 @WebListener("Creates a connection pool that is stored in the Servlet's context for later use via attribute mysql-pool")
 public class MySQLConnectionPoolContextListener implements ServletContextListener {
