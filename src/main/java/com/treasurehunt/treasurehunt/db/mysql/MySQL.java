@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.treasurehunt.treasurehunt.entity.GeocodeLocation;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import com.treasurehunt.treasurehunt.entity.User;
+import com.treasurehunt.treasurehunt.utils.DbUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +57,8 @@ public class MySQL {
 
         try (PreparedStatement postListing = conn.prepareStatement(sql)) {
 
+            ObjectMapper objectMapper = new ObjectMapper();
+
             postListing.setString(1, listing.getListingId());
             postListing.setString(2, listing.getTitle());
             postListing.setDouble(3, listing.getPrice());
@@ -63,12 +66,12 @@ public class MySQL {
             postListing.setString(5, listing.getDescription());
             postListing.setString(6, listing.getItemCondition());
             postListing.setString(7, listing.getBrand());
-            postListing.setString(8, listing.getPictureUrls());
+            postListing.setString(8, objectMapper.writeValueAsString(listing.getPictureUrls()));
             postListing.setString(9, listing.getSellerId());
             postListing.setString(10, listing.getSellerName());
             postListing.setString(11, listing.getAddress());
             postListing.setTimestamp(12, new java.sql.Timestamp(System.currentTimeMillis()));
-            postListing.setString(13, new ObjectMapper().writeValueAsString(listing.getGeocodeLocation()));
+            postListing.setString(13, objectMapper.writeValueAsString(listing.getGeocodeLocation()));
             postListing.setString(14, listing.getCityAndState());
 
             return postListing.executeUpdate() == 1;
@@ -81,13 +84,36 @@ public class MySQL {
     }
 
     // Update an existing listing in listings db
-    public static String updateListing(Connection conn, Listing listing) throws MySQLException {
-        try {
-            // TODO
-            return "";
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new MySQLException("Failed to update Listing");
+    public static boolean updateListing(Connection conn, Listing listing) throws MySQLException {
+
+        String sql = String.format("UPDATE %s " +
+                "SET title = ?, "
+                + "price = ?, "
+                + "category = ?, "
+                + "description = ?, "
+                + "item_condition = ?, "
+                + "brand = ?, "
+                + "date = ?, "
+                + "picture_urls = ? "
+                + "WHERE listing_id = ? "
+                + "AND seller_id = ?", LISTINGS_DB);
+
+        try (PreparedStatement updateListing = conn.prepareStatement(sql)) {
+            updateListing.setString(1, listing.getTitle());
+            updateListing.setDouble(2, listing.getPrice());
+            updateListing.setString(3, listing.getCategory());
+            updateListing.setString(4, listing.getDescription());
+            updateListing.setString(5, listing.getItemCondition());
+            updateListing.setString(6, listing.getBrand());
+            updateListing.setTimestamp(7, new java.sql.Timestamp(System.currentTimeMillis()));
+            updateListing.setString(8, new ObjectMapper().writeValueAsString(listing.getPictureUrls()));
+            updateListing.setString(9, listing.getListingId());
+            updateListing.setString(10, listing.getSellerId());
+
+            return updateListing.executeUpdate() == 1;
+        } catch (SQLException | JsonProcessingException e) {
+            logger.warn("Failed to update listing", e);
+            return false;
         }
     }
 
@@ -126,7 +152,7 @@ public class MySQL {
             while (rs.next()) {
                 Listing.Builder builder = new Listing.Builder();
                 builder.setListingId(rs.getString("listing_id"))
-                       .setPictureUrls(rs.getString("picture_urls"))
+                       .setPictureUrls(DbUtils.readPictureUrls(rs.getString("picture_urls")))
                        .setTitle(rs.getString("title"))
                        .setPrice(rs.getDouble("price"))
                        .setDate(rs.getString("date"))
@@ -159,7 +185,7 @@ public class MySQL {
             while (rs.next()) {
                 Listing.Builder builder = new Listing.Builder();
                 builder.setListingId(rs.getString("listing_id"))
-                       .setPictureUrls(rs.getString("picture_urls"))
+                       .setPictureUrls(DbUtils.readPictureUrls(rs.getString("picture_urls")))
                        .setTitle(rs.getString("title"))
                        .setPrice(rs.getDouble("price"))
                        .setCityAndState(rs.getString("city_and_state"))
@@ -222,7 +248,7 @@ public class MySQL {
                        .setDescription(rs.getString("description"))
                        .setItemCondition(rs.getString("item_condition"))
                        .setBrand(rs.getString("brand"))
-                       .setPictureUrls(rs.getString("picture_urls"))
+                       .setPictureUrls(DbUtils.readPictureUrls(rs.getString("picture_urls")))
                        .setSellerId(rs.getString("seller_id"))
                        .setSellerName(rs.getString("seller_name"))
                        .setAddress(rs.getString("address"))
@@ -233,7 +259,7 @@ public class MySQL {
                 listing = builder.build();
             }
             return listing;
-        } catch (SQLException | JsonProcessingException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             throw new MySQLException("Failed to get listing from DB");
         }
