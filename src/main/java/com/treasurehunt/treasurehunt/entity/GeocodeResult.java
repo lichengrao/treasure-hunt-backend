@@ -58,8 +58,9 @@ public class GeocodeResult {
             if (geocodeObject.getAddressComponents() != null) {
                 List<AddressComponent> addressComponents = geocodeObject.getAddressComponents();
                 for (AddressComponent addressComponent : addressComponents) {
-                    if (addressComponent.getTypes().contains("locality")) {
-                        city = addressComponent.getShortName();
+                    if (addressComponent.getTypes().contains("locality") || addressComponent.getTypes()
+                                                                                            .contains("neighborhood")) {
+                        city = addressComponent.getLongName();
                     } else if (addressComponent.getTypes().contains("administrative_area_level_1")) {
                         state = addressComponent.getShortName();
                     }

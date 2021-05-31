@@ -8,7 +8,8 @@ public class DeleteListingRequestBody {
     private final String listingId;
 
     @JsonCreator
-    public DeleteListingRequestBody(@JsonProperty("user_id") String userId, @JsonProperty("listing_id") String listingId) {
+    public DeleteListingRequestBody(@JsonProperty("user_id") String userId,
+                                    @JsonProperty("listing_id") String listingId) {
         this.userId = userId;
         this.listingId = listingId;
     }

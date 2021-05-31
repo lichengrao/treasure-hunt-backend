@@ -52,7 +52,7 @@ public class MySQL {
     public static boolean createListing(Connection conn, Listing listing) throws MySQLException {
 
         // Insert the new data to listings db
-        String sql = String.format("INSERT INTO %s VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", LISTINGS_DB);
+        String sql = String.format("INSERT INTO %s VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", LISTINGS_DB);
 
         try (PreparedStatement postListing = conn.prepareStatement(sql)) {
 
@@ -69,6 +69,7 @@ public class MySQL {
             postListing.setString(11, listing.getAddress());
             postListing.setTimestamp(12, new java.sql.Timestamp(System.currentTimeMillis()));
             postListing.setString(13, new ObjectMapper().writeValueAsString(listing.getGeocodeLocation()));
+            postListing.setString(14, listing.getCityAndState());
 
             return postListing.executeUpdate() == 1;
 

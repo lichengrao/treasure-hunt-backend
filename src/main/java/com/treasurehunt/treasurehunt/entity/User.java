@@ -94,13 +94,13 @@ public class User {
         return this;
     }
 
+    public String getCityAndState() {
+        return cityAndState;
+    }
+
     public User setCityAndState(String cityAndState) {
         this.cityAndState = cityAndState;
         return this;
-    }
-
-    public String getCityAndState() {
-        return cityAndState;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

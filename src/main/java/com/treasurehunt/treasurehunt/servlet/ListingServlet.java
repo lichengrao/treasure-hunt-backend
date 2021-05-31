@@ -114,7 +114,8 @@ public class ListingServlet extends HttpServlet {
                .setPictureUrls(pictureArray.toString())
                .setSellerName(String.format("%s %s", user.getFirstName(), user.getLastName()))
                .setAddress(user.getAddress())
-               .setGeocodeLocation(user.getGeocodeLocation());
+               .setGeocodeLocation(user.getGeocodeLocation())
+               .setCityAndState(user.getCityAndState());
 
         // Build a java object which contains all listing info
         Listing listing = builder.build();
