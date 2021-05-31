@@ -55,11 +55,4 @@ public class AuthUtils {
             throw new JwtTokenMissingException("Invalid token");
         }
     }
-
-//    public static void main(String[] args) {
-//        System.out.println(generateToken(user ));
-//        System.out.println(getUserIdFromToken("eyJhbGciOiJIUzI1NiJ9
-//        .eyJzdWIiOiIxMTEiLCJhdWQiOiJ2aWRlbyBkZW1vIiwiMWQyMCI6MjAsImlhdCI6MTYyMjM5Mzc4OSwiZXhwIjoxNjIyMzk3Mzg5fQ
-//        .18iQ0PjXqHW8C9m3pfSTtQBXXhTfLd14zh3hZk5JS-0"));
-//    }
 }

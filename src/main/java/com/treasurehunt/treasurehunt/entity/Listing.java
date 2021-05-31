@@ -3,14 +3,15 @@ package com.treasurehunt.treasurehunt.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonRawValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+import java.util.LinkedHashMap;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(builder = Listing.Builder.class)
 public class Listing {
-    @JsonProperty("listingId")
+    @JsonProperty("listing_id")
     private String listingId;
     @JsonProperty("title")
     private String title;
@@ -18,21 +19,20 @@ public class Listing {
     private double price;
     @JsonProperty("category")
     private String category;
-    @JsonProperty("sellerId")
+    @JsonProperty("seller_id")
     private String sellerId;
-    @JsonProperty("sellerName")
+    @JsonProperty("seller_name")
     private String sellerName;
     @JsonProperty("description")
     private String description;
-    @JsonProperty("itemCondition")
+    @JsonProperty("item_condition")
     private String itemCondition;
     @JsonProperty("brand")
     private String brand;
     @JsonProperty("address")
     private String address;
-    @JsonProperty("pictureUrls")
-    @JsonRawValue
-    private String pictureUrls;
+    @JsonProperty("picture_urls")
+    private LinkedHashMap<String, String> pictureUrls;
     @JsonProperty("date")
     private String date;
     @JsonProperty("geo_location")
@@ -100,7 +100,7 @@ public class Listing {
         return address;
     }
 
-    public String getPictureUrls() {
+    public LinkedHashMap<String, String> getPictureUrls() {
         return pictureUrls;
     }
 
@@ -129,7 +129,7 @@ public class Listing {
         private String itemCondition;
         private String brand;
         private String address;
-        private String pictureUrls;
+        private LinkedHashMap<String, String> pictureUrls;
         private String date;
         private GeocodeLocation geocodeLocation;
         private String cityAndState;
@@ -184,7 +184,7 @@ public class Listing {
             return this;
         }
 
-        public Builder setPictureUrls(String pictureUrls) {
+        public Builder setPictureUrls(LinkedHashMap<String, String> pictureUrls) {
             this.pictureUrls = pictureUrls;
             return this;
         }
