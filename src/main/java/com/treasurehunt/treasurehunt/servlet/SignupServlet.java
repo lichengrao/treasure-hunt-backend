@@ -64,6 +64,7 @@ public class SignupServlet extends HttpServlet {
         // Notify if there is existing user_id
         if (!isUserAdded) {
             response.setStatus(HttpServletResponse.SC_CONFLICT);
+            response.getWriter().print("user_id taken");
         }
     }
 }

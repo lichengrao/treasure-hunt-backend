@@ -11,6 +11,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
@@ -30,6 +31,8 @@ import org.json.JSONObject;
 
 import java.io.DataInput;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -39,7 +42,7 @@ public class Elasticsearch {
     private static final String LISTINGS_INDEX = "listings";
 
     // Build request object for Elasticsearch query
-    private static SearchRequest buildListingsSearchRequest(SearchListingsRequestBody requestBody) throws IOException {
+    public static SearchRequest buildListingsSearchRequest(SearchListingsRequestBody requestBody) throws IOException {
         SearchRequest searchRequest = new SearchRequest(LISTINGS_INDEX);
 
         // Configure searchRequest with data in the requestBody
@@ -51,15 +54,26 @@ public class Elasticsearch {
         // Configure searchQuery and filters
         if (requestBody.getKeyword() != null) {
 
-            // TODO filters
             // BoolQueryBuilder is used to assemble query conditions.
             BoolQueryBuilder boolBuilder = QueryBuilders.boolQuery();
             boolBuilder.must(QueryBuilders.matchQuery("title", requestBody.getKeyword()));
-//            boolBuilder.filter(QueryBuilders.termQuery("item_condition", requestBody.getCondition()));
-//            boolBuilder.filter(QueryBuilders.geoDistanceQuery("location").point(requestBody.getLatitude(),requestBody.getLongitude()).distance(requestBody.getDistance()));
-//            boolBuilder.filter(QueryBuilders.rangeQuery("price").from(requestBody.getMinPrice()).to(requestBody.getMinPrice()));
-//            boolBuilder.filter(QueryBuilders.rangeQuery("date_created"));
-
+            if (requestBody.getCondition() != null) {
+                boolBuilder.filter(QueryBuilders.termQuery("item_condition", requestBody.getCondition()));
+            }
+            if (requestBody.getDistance() != null) {
+                boolBuilder.filter(QueryBuilders.geoDistanceQuery("location").point(requestBody.getLatitude(), requestBody.getLongitude()).distance(requestBody.getDistance(), DistanceUnit.MILES));
+            }
+            if (requestBody.getMaxPrice() != 0.0) {
+                boolBuilder.filter(QueryBuilders.rangeQuery("price").lte(requestBody.getMaxPrice()));
+            }
+            if (requestBody.getMinPrice() != 0.0) {
+                boolBuilder.filter(QueryBuilders.rangeQuery("price").gte(requestBody.getMinPrice()));
+            }
+            if (requestBody.getTmeInterval() != null) {
+                Instant now = Instant.now();
+                long interval = Long.parseLong(requestBody.getTmeInterval());
+                boolBuilder.filter(QueryBuilders.rangeQuery("date_created").from(now.minus(interval, ChronoUnit.HOURS)));
+            }
             sourceBuilder.query(boolBuilder);
 
         } else if (requestBody.getCategory() != null) {
@@ -74,13 +88,12 @@ public class Elasticsearch {
     }
 
     // Send the request to Elasticsearch and receive the raw response
-    private static String getRawSearchResults(RestHighLevelClient client, SearchRequest searchRequest) throws ElasticsearchException {
+    public static String getRawSearchResults(RestHighLevelClient client, SearchRequest searchRequest) throws ElasticsearchException {
         try {
             // Send the request to Elasticsearch, and receive the results in searchResponse
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
             // Parse the response received from Elasticsearch
-            // TODO
             JSONArray rawSearchResults = new JSONArray();
 
             // The SearchHits provides global information about all hits, like total number of hits or the maximum score
@@ -91,9 +104,8 @@ public class Elasticsearch {
                 // SearchHit provides access to basic information (Note: SearchHit and SearchHits are two different classes)
                 SearchHit[] searchHits = hits.getHits();
                 for (SearchHit hit : searchHits) {
-                    // do something with the SearchHit
 
-                    // To retrieve the whole SearchHit as a JSON string
+                    // Retrieve each SearchHit as a JSON string
                     String sourceAsString = hit.getSourceAsString();
                     JSONObject result = new JSONObject(sourceAsString);
 
@@ -164,11 +176,10 @@ public class Elasticsearch {
                     builder.field("lon", listing.getGeocodeLocation().getLongitude());
                 }
                 builder.endObject();
-
                 // picture_urls
                 // Elasticsearch arrays do not require a dedicated field data type.
                 // Any field can contain zero or more values by default
-                builder.field("picture_urls", listing.getPictureUrls().toString());
+                builder.field("picture_urls", new ObjectMapper().writeValueAsString(listing.getPictureUrls()));
                 // date_created
                 builder.field("date_created", listing.getDate());
             }

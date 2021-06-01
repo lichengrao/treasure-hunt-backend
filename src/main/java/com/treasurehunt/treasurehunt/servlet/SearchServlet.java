@@ -7,6 +7,7 @@ import com.treasurehunt.treasurehunt.entity.GeocodeLocation;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import com.treasurehunt.treasurehunt.entity.SearchListingsRequestBody;
 import com.treasurehunt.treasurehunt.utils.ServletUtil;
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -35,38 +36,51 @@ public class SearchServlet extends HttpServlet {
         // 1. keyword associated with filters; 2. category without filters
         String keyword = request.getParameter("keyword");
         if (keyword != null) {
-
-            double lat = Double.valueOf(request.getParameter("latitude"));
-            double lon = Double.valueOf(request.getParameter("longitude"));
-            double maxPrice = Double.valueOf(request.getParameter("max_price"));
-            double minPrice = Double.valueOf(request.getParameter("min_price"));
-
             // Retrieve all filters from request url
             builder.setKeyword(keyword)
-                    .setLatitude(lat)
-                    .setLongitude(lon)
-                    .setDistance(request.getParameter("radius"))
-                    .setCondition(request.getParameter("min_condition"))
-                    .setMaxPrice(maxPrice)
-                    .setMinPrice(minPrice);
-//                    .setDateListed();
+                    .setLatitude(Double.valueOf(request.getParameter("latitude")))
+                    .setLongitude(Double.valueOf(request.getParameter("longitude")));
+
+            if (request.getParameter("radius") != null) {
+                builder.setDistance(request.getParameter("radius"));
+            }
+            if (request.getParameter("condition") != null) {
+                builder.setCondition(request.getParameter("condition"));
+            }
+            if (request.getParameter("max_price") != null) {
+                double max = Double.valueOf(request.getParameter("max_price"));
+                if (max < 0.0) {
+                    response.getWriter().println("price cannot be negative");
+                } else {
+                    builder.setMaxPrice(max);
+                }
+            }
+            if (request.getParameter("min_price") != null) {
+                double min = Double.valueOf(request.getParameter("min_price"));
+                if (min < 0.0) {
+                    response.getWriter().println("price cannot be negative");
+                } else {
+                    builder.setMinPrice(min);
+                }
+            }
+            if (request.getParameter("time_interval") != null) {
+                builder.setTimeInterval(request.getParameter("time_interval"));
+            }
+
         } else {
             builder.setCategory(request.getParameter("category"));
         }
 
-        SearchListingsRequestBody SearchRequest = builder.build();
+        SearchListingsRequestBody requestBody = builder.build();
 
         // Get search results
         RestHighLevelClient client = (RestHighLevelClient) request.getServletContext().getAttribute("es-client");
-        List<Listing> results = new ArrayList<>();
-        try {
-            results = Elasticsearch.getSearchResults(client, SearchRequest);
+//        SearchRequest requestBuild = Elasticsearch.buildListingsSearchRequest(requestBody);
+//        String rawSearchResults = Elasticsearch.getRawSearchResults(client, requestBuild);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        List<Listing> finalresult = Elasticsearch.getSearchResults(client, requestBody);
+
         // Write search results into response body
-        response.getWriter().print(new ObjectMapper().writeValueAsString(results));
-
+        response.getWriter().print(new ObjectMapper().writeValueAsString(finalresult));
     }
 }
