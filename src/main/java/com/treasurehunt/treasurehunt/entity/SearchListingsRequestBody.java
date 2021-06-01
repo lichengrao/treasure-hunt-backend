@@ -29,7 +29,7 @@ public class SearchListingsRequestBody {
     @JsonProperty("minPrice")
     private double minPrice;
     @JsonProperty("timeInterval")
-    private String timeInterval;
+    private long timeInterval;
 
     public String getKeyword() {
         return keyword;
@@ -63,7 +63,7 @@ public class SearchListingsRequestBody {
         return minPrice;
     }
 
-    public String getTmeInterval() {
+    public long getTmeInterval() {
         return timeInterval;
     }
 
@@ -94,7 +94,7 @@ public class SearchListingsRequestBody {
         private String distance;
         private double maxPrice;
         private double minPrice;
-        private String timeInterval;
+        private long timeInterval;
 
         public Builder setKeyword(String keyword) {
             this.keyword = keyword;
@@ -121,7 +121,7 @@ public class SearchListingsRequestBody {
             return this;
         }
 
-        public Builder setTimeInterval(String timeInterval) {
+        public Builder setTimeInterval(long timeInterval) {
             this.timeInterval = timeInterval;
             return this;
         }

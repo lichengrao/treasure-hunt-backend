@@ -64,7 +64,12 @@ public class SearchServlet extends HttpServlet {
                 }
             }
             if (request.getParameter("time_interval") != null) {
-                builder.setTimeInterval(request.getParameter("time_interval"));
+                long interval = Long.parseLong(request.getParameter("time_interval"));
+                if (interval < 0) {
+                    response.getWriter().println("price cannot be negative");
+                } else {
+                    builder.setTimeInterval(interval);
+                }
             }
 
         } else {
@@ -73,14 +78,11 @@ public class SearchServlet extends HttpServlet {
 
         SearchListingsRequestBody requestBody = builder.build();
 
+
         // Get search results
         RestHighLevelClient client = (RestHighLevelClient) request.getServletContext().getAttribute("es-client");
-//        SearchRequest requestBuild = Elasticsearch.buildListingsSearchRequest(requestBody);
-//        String rawSearchResults = Elasticsearch.getRawSearchResults(client, requestBuild);
-
-        List<Listing> finalresult = Elasticsearch.getSearchResults(client, requestBody);
-
+        List<Listing> finalResult = Elasticsearch.getSearchResults(client, requestBody);
         // Write search results into response body
-        response.getWriter().print(new ObjectMapper().writeValueAsString(finalresult));
+        response.getWriter().print(new ObjectMapper().writeValueAsString(finalResult));
     }
 }

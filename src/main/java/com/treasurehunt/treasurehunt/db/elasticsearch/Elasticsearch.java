@@ -2,8 +2,10 @@ package com.treasurehunt.treasurehunt.db.elasticsearch;
 
 import com.alibaba.fastjson.support.geo.Point;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.treasurehunt.treasurehunt.entity.GeocodeLocation;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import com.treasurehunt.treasurehunt.entity.SearchListingsRequestBody;
+import com.treasurehunt.treasurehunt.utils.DbUtils;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
@@ -69,10 +71,9 @@ public class Elasticsearch {
             if (requestBody.getMinPrice() != 0.0) {
                 boolBuilder.filter(QueryBuilders.rangeQuery("price").gte(requestBody.getMinPrice()));
             }
-            if (requestBody.getTmeInterval() != null) {
+            if (requestBody.getTmeInterval() != 0) {
                 Instant now = Instant.now();
-                long interval = Long.parseLong(requestBody.getTmeInterval());
-                boolBuilder.filter(QueryBuilders.rangeQuery("date_created").from(now.minus(interval, ChronoUnit.HOURS)));
+                boolBuilder.filter(QueryBuilders.rangeQuery("date_created").from(now.minus(requestBody.getTmeInterval(), ChronoUnit.HOURS)));
             }
             sourceBuilder.query(boolBuilder);
 
@@ -88,32 +89,18 @@ public class Elasticsearch {
     }
 
     // Send the request to Elasticsearch and receive the raw response
-    public static String getRawSearchResults(RestHighLevelClient client, SearchRequest searchRequest) throws ElasticsearchException {
+    public static SearchHit[] getRawSearchResults(RestHighLevelClient client, SearchRequest searchRequest) throws ElasticsearchException {
         try {
             // Send the request to Elasticsearch, and receive the results in searchResponse
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
-            // Parse the response received from Elasticsearch
-            JSONArray rawSearchResults = new JSONArray();
-
             // The SearchHits provides global information about all hits, like total number of hits or the maximum score
             SearchHits hits = searchResponse.getHits();
-            // The search result is not null
-            if (hits.getTotalHits().value != 0) {
 
-                // SearchHit provides access to basic information (Note: SearchHit and SearchHits are two different classes)
-                SearchHit[] searchHits = hits.getHits();
-                for (SearchHit hit : searchHits) {
+            // SearchHit provides access to basic information (Note: SearchHit and SearchHits are two different classes)
+            SearchHit[] searchHits = hits.getHits();
 
-                    // Retrieve each SearchHit as a JSON string
-                    String sourceAsString = hit.getSourceAsString();
-                    JSONObject result = new JSONObject(sourceAsString);
-
-                    rawSearchResults.put(result);
-                }
-            }
-
-            return rawSearchResults.toString();
+            return searchHits;
         } catch (Exception e) {
             e.printStackTrace();
             throw new ElasticsearchException("Unable to receive search results from Elasticsearch");
@@ -125,13 +112,49 @@ public class Elasticsearch {
                                                  SearchListingsRequestBody requestBody) throws ElasticsearchException {
 
         try {
-            // Get raw response from Elasicsearch
-            String rawSearchResults = getRawSearchResults(client, buildListingsSearchRequest(requestBody));
-            System.out.print(rawSearchResults);
-            ObjectMapper mapper = new ObjectMapper();
+            // Get raw search results from Elasicsearch
+            SearchHit[] searchHits = getRawSearchResults(client, buildListingsSearchRequest(requestBody));
 
             // Create list of search results
-            List<Listing> listingsSearchResults = Arrays.asList(mapper.readValue(rawSearchResults, Listing[].class));
+            List<Listing> listingsSearchResults = new ArrayList<>();
+
+            for (SearchHit hit : searchHits) {
+
+                // Retrieve each SearchHit as a Map
+                Map<String, Object> resultMap = hit.getSourceAsMap();
+
+                // Get GeocodeLocation from the map
+                Map<String, Double> geoPointParameters = (Map<String, Double>) resultMap.get("location");
+                GeocodeLocation.Builder geoBuilder = new GeocodeLocation.Builder();
+                geoBuilder.latitude(geoPointParameters.get("lat")).longitude(geoPointParameters.get("lon"));
+                GeocodeLocation geoPoint = geoBuilder.build();
+
+                // Build the Listing java object
+                Listing.Builder builder = new Listing.Builder();
+                builder.setGeocodeLocation(geoPoint)
+                        .setPictureUrls(DbUtils.readPictureUrls(resultMap.get("picture_urls").toString()))
+                        .setListingId(resultMap.get("listing_id").toString())
+                        .setTitle(resultMap.get("title").toString())
+                        .setPrice((Double) resultMap.get("price"))
+                        .setCategory(resultMap.get("category").toString())
+                        .setSellerName(resultMap.get("seller_name").toString())
+                        .setBrand(resultMap.get("brand").toString())
+                        .setItemCondition(resultMap.get("item_condition").toString())
+                        .setDescription(resultMap.get("description").toString())
+                        .setAddress(resultMap.get("address").toString())
+                        .setCityAndState(resultMap.get("city_and_state").toString())
+                        .setDate(resultMap.get("date_created").toString());
+
+                Listing item = builder.build();
+
+                listingsSearchResults.add(item);
+
+                // Extra Reading : you may also retrieve each SearchHit as a JSON string
+//                String sourceAsString = hit.getSourceAsString();
+//                JSONObject result = new JSONObject(sourceAsString);
+//                JSONArray rawSearchResults = new JSONArray();
+//                rawSearchResults.put(result);
+            }
 
             // Return the responseBody
             return listingsSearchResults;
