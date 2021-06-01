@@ -70,7 +70,7 @@ public class MySQL {
             postListing.setString(9, listing.getSellerId());
             postListing.setString(10, listing.getSellerName());
             postListing.setString(11, listing.getAddress());
-            postListing.setTimestamp(12, new java.sql.Timestamp(System.currentTimeMillis()));
+            postListing.setString(12, listing.getDate());
             postListing.setString(13, objectMapper.writeValueAsString(listing.getGeocodeLocation()));
             postListing.setString(14, listing.getCityAndState());
 
@@ -105,7 +105,7 @@ public class MySQL {
             updateListing.setString(4, listing.getDescription());
             updateListing.setString(5, listing.getItemCondition());
             updateListing.setString(6, listing.getBrand());
-            updateListing.setTimestamp(7, new java.sql.Timestamp(System.currentTimeMillis()));
+            updateListing.setString(7, listing.getDate());
             updateListing.setString(8, new ObjectMapper().writeValueAsString(listing.getPictureUrls()));
             updateListing.setString(9, listing.getListingId());
             updateListing.setString(10, listing.getSellerId());

@@ -1,5 +1,6 @@
 package com.treasurehunt.treasurehunt.db.elasticsearch;
 
+import com.alibaba.fastjson.support.geo.Point;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import com.treasurehunt.treasurehunt.entity.SearchListingsRequestBody;
@@ -18,6 +19,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.builder.PointInTimeBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -119,57 +121,53 @@ public class Elasticsearch {
     // Add listing to the listings index
     public static void addListing(RestHighLevelClient client, Listing listing) throws ElasticsearchException {
         try {
-            // Create index request
-            IndexRequest request = new IndexRequest(LISTINGS_INDEX);
             // create jsonMap for the listing object
             XContentBuilder builder = XContentFactory.jsonBuilder();
             builder.startObject();
             {
-                builder.startObject("properties");
+                // listing_id
+                // TODO we already have listingId
+                builder.field("listing_id", listing.getListingId());
+                // title
+                builder.field("title", listing.getTitle());
+                // price
+                builder.field("price", listing.getPrice());
+                // category
+                builder.field("category", listing.getCategory());
+                // seller_name
+                builder.field("seller_name", listing.getSellerName());
+                // brand
+                builder.field("brand", listing.getBrand());
+                // item_condition
+                builder.field("item_condition", listing.getItemCondition());
+                // description
+                builder.field("description", listing.getDescription());
+                // address
+                builder.field("address", listing.getAddress());
+                // city and state
+                builder.field("city_and_state", listing.getCityAndState());
+                // location
+                builder.startObject("location");
                 {
-                    // listing_id
-                    // TODO we already have listingId
-                    builder.field("listingId", listing.getListingId());
-
-                    // title
-                    builder.field("title", listing.getTitle());
-
-                    // category
-                    builder.field("category", listing.getCategory());
-
-                    // seller_name
-                    builder.field("sellerName", listing.getSellerName());
-
-                    // brand
-                    builder.field("brand", listing.getBrand());
-
-                    // item_condition
-                    builder.field("itemCondition", listing.getItemCondition());
-
-                    // description
-                    builder.field("description", listing.getDescription());
-
-                    // address
-                    builder.field("address", listing.getAddress());
-
-                    // location
-                    builder.field("location", "geo_point");
-
-                    // picture_urls
-                    // Elasticsearch arrays do not require a dedicated field data type.
-                    // Any field can contain zero or more values by default
-                    builder.field("pictureUrls", listing.getPictureUrls());
-
-                    // date_created
-                    builder.field("date", listing.getDate());
+                    builder.field("lat", listing.getGeocodeLocation().getLatitude());
+                    builder.field("lon", listing.getGeocodeLocation().getLongitude());
                 }
                 builder.endObject();
+
+                // picture_urls
+                // Elasticsearch arrays do not require a dedicated field data type.
+                // Any field can contain zero or more values by default
+                builder.field("picture_urls", listing.getPictureUrls().toString());
+                // date_created
+                builder.field("date_created", listing.getDate());
             }
             builder.endObject();
-            request.id(listing.getListingId()).source(builder);
 
+            // Create index request
+            IndexRequest request = new IndexRequest(LISTINGS_INDEX).id(listing.getListingId()).source(builder);
             // Execute the request
             client.index(request, RequestOptions.DEFAULT);
+
         } catch (Exception e) {
             e.printStackTrace();
             throw new ElasticsearchException("Failed to create Listing");
@@ -179,57 +177,39 @@ public class Elasticsearch {
     // Update existing listing in the listings index
     public static void updateListing(RestHighLevelClient client, Listing listing) throws ElasticsearchException {
         try {
-            // Create update request
-            UpdateRequest request = new UpdateRequest(LISTINGS_INDEX, listing.getListingId());
 
             // create jsonMap for the updated listing object
             XContentBuilder builder = XContentFactory.jsonBuilder();
             builder.startObject();
             {
-                builder.startObject("properties");
-                {
-                    // listing_id
-                    // TODO we already have listingId
-                    builder.field("listingId", listing.getListingId());
+                // listing_id
+                // TODO we already have listingId
+                builder.field("listing_id", listing.getListingId());
+                // title
+                builder.field("title", listing.getTitle());
+                // category
+                builder.field("category", listing.getCategory());
+                // brand
+                builder.field("brand", listing.getBrand());
+                // item_condition
+                builder.field("item_condition", listing.getItemCondition());
+                // description
+                builder.field("description", listing.getDescription());
 
-                    // title
-                    builder.field("title", listing.getTitle());
-
-                    // category
-                    builder.field("category", listing.getCategory());
-
-                    // seller_name
-                    builder.field("sellerName", listing.getSellerName());
-
-                    // brand
-                    builder.field("brand", listing.getBrand());
-
-                    // item_condition
-                    builder.field("itemCondition", listing.getItemCondition());
-
-                    // description
-                    builder.field("description", listing.getDescription());
-
-                    // address
-                    builder.field("address", listing.getAddress());
-
-                    // location
-                    builder.field("location", "geo_point");
-
-                    // picture_urls
-                    // Elasticsearch arrays do not require a dedicated field data type.
-                    // Any field can contain zero or more values by default
-                    builder.field("pictureUrls", listing.getPictureUrls());
-
-                    // date_created
-                    builder.field("date", listing.getDate());
-                }
-                builder.endObject();
+                // picture_urls
+                // Elasticsearch arrays do not require a dedicated field data type.
+                // Any field can contain zero or more values by default
+                builder.field("picture_urls", listing.getPictureUrls().toString());
+                // date_created
+                builder.field("date_created", listing.getDate());
             }
             builder.endObject();
 
+            // Create update request
+            UpdateRequest request = new UpdateRequest(LISTINGS_INDEX, listing.getListingId()).doc(builder);
             // Execute the request
             client.update(request, RequestOptions.DEFAULT);
+
         } catch (Exception e) {
             e.printStackTrace();
             throw new ElasticsearchException("Failed to update Listing");

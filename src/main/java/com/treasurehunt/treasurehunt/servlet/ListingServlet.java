@@ -2,6 +2,7 @@ package com.treasurehunt.treasurehunt.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.storage.Storage;
+import com.treasurehunt.treasurehunt.db.elasticsearch.Elasticsearch;
 import com.treasurehunt.treasurehunt.db.mysql.MySQL;
 import com.treasurehunt.treasurehunt.entity.DeleteListingRequestBody;
 import com.treasurehunt.treasurehunt.entity.Listing;
@@ -23,6 +24,7 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.LinkedHashMap;
 
 @MultipartConfig
@@ -85,18 +87,19 @@ public class ListingServlet extends HttpServlet {
         // Read info from request body, and add fullName, address, and geolocation of seller
         Listing.Builder builder = new Listing.Builder();
         builder.setListingId(listingId)
-               .setTitle(request.getParameter("title"))
-               .setPrice(Double.parseDouble(request.getParameter("price")))
-               .setCategory(request.getParameter("category"))
-               .setSellerId(sellerId)
-               .setDescription(request.getParameter("description"))
-               .setItemCondition(request.getParameter("item_condition"))
-               .setBrand(request.getParameter("brand"))
-               .setPictureUrls(pictureUrls)
-               .setSellerName(String.format("%s %s", user.getFirstName(), user.getLastName()))
-               .setAddress(user.getAddress())
-               .setGeocodeLocation(user.getGeocodeLocation())
-               .setCityAndState(user.getCityAndState());
+                .setTitle(request.getParameter("title"))
+                .setPrice(Double.parseDouble(request.getParameter("price")))
+                .setCategory(request.getParameter("category"))
+                .setSellerId(sellerId)
+                .setDescription(request.getParameter("description"))
+                .setItemCondition(request.getParameter("item_condition"))
+                .setBrand(request.getParameter("brand"))
+                .setPictureUrls(pictureUrls)
+                .setSellerName(String.format("%s %s", user.getFirstName(), user.getLastName()))
+                .setAddress(user.getAddress())
+                .setGeocodeLocation(user.getGeocodeLocation())
+                .setCityAndState(user.getCityAndState())
+                .setDate(Instant.now().toString());
 
         // Build a java object which contains all listing info
         Listing listing = builder.build();
@@ -121,9 +124,9 @@ public class ListingServlet extends HttpServlet {
 
         // Add listing to Elasticsearch
         RestHighLevelClient elasticsearchClient = (RestHighLevelClient) request.getServletContext()
-                                                                               .getAttribute("es-client");
+                .getAttribute("es-client");
         try {
-//            Elasticsearch.addListing(elasticsearchClient, listing);
+            Elasticsearch.addListing(elasticsearchClient, listing);
         } catch (ElasticsearchException e) {
             logger.warn("Error while attempting to add new listing to Elasticsearch db", e);
             response.setStatus(500);
@@ -211,14 +214,15 @@ public class ListingServlet extends HttpServlet {
         // Read info from request body, and add fullName, address, and geolocation of seller
         Listing.Builder builder = new Listing.Builder();
         builder.setListingId(listingId)
-               .setSellerId(sellerId)
-               .setTitle(request.getParameter("title"))
-               .setPrice(Double.parseDouble(request.getParameter("price")))
-               .setCategory(request.getParameter("category"))
-               .setDescription(request.getParameter("description"))
-               .setItemCondition(request.getParameter("item_condition"))
-               .setBrand(request.getParameter("brand"))
-               .setPictureUrls(newPictureUrls);
+                .setSellerId(sellerId)
+                .setTitle(request.getParameter("title"))
+                .setPrice(Double.parseDouble(request.getParameter("price")))
+                .setCategory(request.getParameter("category"))
+                .setDescription(request.getParameter("description"))
+                .setItemCondition(request.getParameter("item_condition"))
+                .setBrand(request.getParameter("brand"))
+                .setPictureUrls(newPictureUrls)
+                .setDate(Instant.now().toString());
 
         // Build a java object which contains all listing info
         Listing updatedListing = builder.build();
@@ -243,9 +247,9 @@ public class ListingServlet extends HttpServlet {
 
         // Update listing in Elasticsearch
         RestHighLevelClient elasticsearchClient = (RestHighLevelClient) request.getServletContext()
-                                                                               .getAttribute("es-client");
+                .getAttribute("es-client");
         try {
-//            Elasticsearch.updateListing(elasticsearchClient, listing);
+            Elasticsearch.updateListing(elasticsearchClient, updatedListing);
         } catch (ElasticsearchException e) {
             logger.warn("Error while attempting to add new listing to Elasticsearch db", e);
             response.setStatus(500);
@@ -320,8 +324,8 @@ public class ListingServlet extends HttpServlet {
         // delete from ES
         // TODO
         RestHighLevelClient elasticsearchClient = (RestHighLevelClient) request.getServletContext()
-                                                                               .getAttribute("es-client");
-        // Elasticsearch.deleteListing(elasticsearchClient, listing);
+                .getAttribute("es-client");
+        Elasticsearch.deleteListing(elasticsearchClient, listing);
 
         // delete from GCS
         Storage storage = (Storage) request.getServletContext().getAttribute("gcs-client");
