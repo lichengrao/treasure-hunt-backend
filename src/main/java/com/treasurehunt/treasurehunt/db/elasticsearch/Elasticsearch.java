@@ -14,6 +14,7 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermQueryBuilder;
@@ -48,19 +49,24 @@ public class Elasticsearch {
         sourceBuilder.sort(new FieldSortBuilder("price").order(SortOrder.ASC));
 
         // Configure searchQuery and filters
-        if (requestBody.getCategory() != null) {
-            TermQueryBuilder termQueryBuilder = new TermQueryBuilder("category", "keywords");
+        if (requestBody.getKeyword() != null) {
+
+            // TODO filters
+            // BoolQueryBuilder is used to assemble query conditions.
+            BoolQueryBuilder boolBuilder = QueryBuilders.boolQuery();
+            boolBuilder.must(QueryBuilders.matchQuery("title", requestBody.getKeyword()));
+//            boolBuilder.filter(QueryBuilders.termQuery("item_condition", requestBody.getCondition()));
+//            boolBuilder.filter(QueryBuilders.geoDistanceQuery("location").point(requestBody.getLatitude(),requestBody.getLongitude()).distance(requestBody.getDistance()));
+//            boolBuilder.filter(QueryBuilders.rangeQuery("price").from(requestBody.getMinPrice()).to(requestBody.getMinPrice()));
+//            boolBuilder.filter(QueryBuilders.rangeQuery("date_created"));
+
+            sourceBuilder.query(boolBuilder);
+
+        } else if (requestBody.getCategory() != null) {
+            TermQueryBuilder termQueryBuilder = new TermQueryBuilder("category", requestBody.getCategory());
             sourceBuilder.query(termQueryBuilder);
-        } else if (requestBody.getKeyword() != null && requestBody.getMaxPrice() == null) {
-            MatchQueryBuilder matchQueryBuilder = new MatchQueryBuilder("description", "text");
-            sourceBuilder.query(matchQueryBuilder);
-        } else if (requestBody.getKeyword() != null && requestBody.getMaxPrice() != null) {
-            MatchQueryBuilder matchQueryBuilder = new MatchQueryBuilder("description", "text");
-            sourceBuilder.query(matchQueryBuilder);
-            // TODO filter
-
-
         }
+
         searchRequest.source(sourceBuilder);
 
         // return searchRequest object
@@ -79,16 +85,20 @@ public class Elasticsearch {
 
             // The SearchHits provides global information about all hits, like total number of hits or the maximum score
             SearchHits hits = searchResponse.getHits();
-            // SearchHit provides access to basic information (Note: SearchHit and SearchHits are two different classes)
-            SearchHit[] searchHits = hits.getHits();
-            for (SearchHit hit : searchHits) {
-                // do something with the SearchHit
+            // The search result is not null
+            if (hits.getTotalHits().value != 0) {
 
-                // To retrieve the whole SearchHit as a JSON string
-                String sourceAsString = hit.getSourceAsString();
-                JSONObject result = new JSONObject(sourceAsString);
+                // SearchHit provides access to basic information (Note: SearchHit and SearchHits are two different classes)
+                SearchHit[] searchHits = hits.getHits();
+                for (SearchHit hit : searchHits) {
+                    // do something with the SearchHit
 
-                rawSearchResults.put(result);
+                    // To retrieve the whole SearchHit as a JSON string
+                    String sourceAsString = hit.getSourceAsString();
+                    JSONObject result = new JSONObject(sourceAsString);
+
+                    rawSearchResults.put(result);
+                }
             }
 
             return rawSearchResults.toString();
@@ -105,6 +115,7 @@ public class Elasticsearch {
         try {
             // Get raw response from Elasicsearch
             String rawSearchResults = getRawSearchResults(client, buildListingsSearchRequest(requestBody));
+            System.out.print(rawSearchResults);
             ObjectMapper mapper = new ObjectMapper();
 
             // Create list of search results
@@ -187,6 +198,8 @@ public class Elasticsearch {
                 builder.field("listing_id", listing.getListingId());
                 // title
                 builder.field("title", listing.getTitle());
+                // price
+                builder.field("price", listing.getPrice());
                 // category
                 builder.field("category", listing.getCategory());
                 // brand

@@ -18,14 +18,18 @@ public class SearchListingsRequestBody {
     private String category;
     @JsonProperty("condition")
     private String condition;
-    @JsonProperty("center")
-    private GeocodeLocation center;
+    @JsonProperty("latitude")
+    private double latitude;
+    @JsonProperty("longitude")
+    private double longitude;
     @JsonProperty("distance")
     private String distance;
     @JsonProperty("maxPrice")
-    private String maxPrice;
+    private double maxPrice;
     @JsonProperty("minPrice")
-    private String minPrice;
+    private double minPrice;
+    @JsonProperty("dateListed")
+    private String dateListed;
 
     public String getKeyword() {
         return keyword;
@@ -39,30 +43,40 @@ public class SearchListingsRequestBody {
         return condition;
     }
 
-    public GeocodeLocation getCenter() {
-        return center;
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
     }
 
     public String getDistance() {
         return distance;
     }
 
-    public String getMaxPrice() {
+    public double getMaxPrice() {
         return maxPrice;
     }
 
-    public String getMinPrice() {
+    public double getMinPrice() {
         return minPrice;
+    }
+
+    public String getDateListed() {
+        return dateListed;
     }
 
     public SearchListingsRequestBody(Builder builder) {
         this.keyword = builder.keyword;
         this.category = builder.category;
         this.condition = builder.condition;
-        this.center = builder.center;
+        this.longitude = builder.longitude;
+        this.latitude = builder.latitude;
         this.distance = builder.distance;
         this.maxPrice = builder.maxPrice;
         this.minPrice = builder.minPrice;
+        this.dateListed = builder.dateListed;
     }
 
     public SearchListingsRequestBody() {
@@ -75,10 +89,12 @@ public class SearchListingsRequestBody {
         private String keyword;
         private String category;
         private String condition;
-        private GeocodeLocation center;
+        private double latitude;
+        private double longitude;
         private String distance;
-        private String maxPrice;
-        private String minPrice;
+        private double maxPrice;
+        private double minPrice;
+        private String dateListed;
 
         public Builder setKeyword(String keyword) {
             this.keyword = keyword;
@@ -95,8 +111,18 @@ public class SearchListingsRequestBody {
             return this;
         }
 
-        public Builder setCenter(GeocodeLocation center) {
-            this.center = center;
+        public Builder setLatitude(double latitude) {
+            this.latitude = latitude;
+            return this;
+        }
+
+        public Builder setLongitude(double longitude) {
+            this.longitude = longitude;
+            return this;
+        }
+
+        public Builder setDateListed(String dateListed) {
+            this.dateListed = dateListed;
             return this;
         }
 
@@ -105,12 +131,12 @@ public class SearchListingsRequestBody {
             return this;
         }
 
-        public Builder setMaxPrice(String maxPrice) {
+        public Builder setMaxPrice(double maxPrice) {
             this.maxPrice = maxPrice;
             return this;
         }
 
-        public Builder setMinPrice(String minPrice) {
+        public Builder setMinPrice(double minPrice) {
             this.minPrice = minPrice;
             return this;
         }

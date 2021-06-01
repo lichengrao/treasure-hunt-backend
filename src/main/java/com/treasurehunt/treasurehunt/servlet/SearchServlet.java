@@ -3,6 +3,7 @@ package com.treasurehunt.treasurehunt.servlet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.treasurehunt.treasurehunt.db.elasticsearch.Elasticsearch;
 import com.treasurehunt.treasurehunt.db.elasticsearch.ElasticsearchClient;
+import com.treasurehunt.treasurehunt.entity.GeocodeLocation;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import com.treasurehunt.treasurehunt.entity.SearchListingsRequestBody;
 import com.treasurehunt.treasurehunt.utils.ServletUtil;
@@ -28,46 +29,44 @@ public class SearchServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,
             IOException {
 
-        SearchListingsRequestBody searchrequest = ServletUtil.readRequestBody(SearchListingsRequestBody.class, request);
+        SearchListingsRequestBody.Builder builder = new SearchListingsRequestBody.Builder();
 
+        // Two search mode:
+        // 1. keyword associated with filters; 2. category without filters
+        String keyword = request.getParameter("keyword");
+        if (keyword != null) {
 
-//        SearchListingsRequestBody.Builder builder = new SearchListingsRequestBody.Builder();
-//        Map<String, String> filters = new HashMap<>();
-//
-//        // get all parameterNames and values from url
-//        Enumeration<String> parameterNames = request.getParameterNames();
-//        while (parameterNames.hasMoreElements()) {
-//            String name = (String) parameterNames.nextElement();
-//            if (name.equals("keyword")) {
-//                builder.setKeyword(request.getParameter(name));
-//            } else if (name.equals("category")) {
-//                builder.setCategory(request.getParameter(name));
-//            } else {
-//                filters.put(name, request.getParameter(name));
-//            }
-//        }
-//        builder.setFilters(filters);
-//
-//        SearchListingsRequestBody searchrequest = builder.build();
+            double lat = Double.valueOf(request.getParameter("latitude"));
+            double lon = Double.valueOf(request.getParameter("longitude"));
+            double maxPrice = Double.valueOf(request.getParameter("max_price"));
+            double minPrice = Double.valueOf(request.getParameter("min_price"));
 
-        // Test
-        response.getWriter().println();
-//        response.getWriter().println(searchrequest.getCategory());
-//        response.getWriter().println(searchrequest.getKeyword());
-//        response.getWriter().println(searchrequest.getFilters());
+            // Retrieve all filters from request url
+            builder.setKeyword(keyword)
+                    .setLatitude(lat)
+                    .setLongitude(lon)
+                    .setDistance(request.getParameter("radius"))
+                    .setCondition(request.getParameter("min_condition"))
+                    .setMaxPrice(maxPrice)
+                    .setMinPrice(minPrice);
+//                    .setDateListed();
+        } else {
+            builder.setCategory(request.getParameter("category"));
+        }
 
-//        // Get search results
-//        List<Listing> results = new ArrayList<>();
-//        try {
-//            // Start a client in try-with-resources so client will auto-close after execution
-//            try (RestHighLevelClient client = ElasticsearchClient.createElasticsearchClient()) {
-//
-//                results = Elasticsearch.getSearchResults(client, searchrequest);
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        // Write search results into response body
-//        response.getWriter().print(new ObjectMapper().writeValueAsString(results));
+        SearchListingsRequestBody SearchRequest = builder.build();
+
+        // Get search results
+        RestHighLevelClient client = (RestHighLevelClient) request.getServletContext().getAttribute("es-client");
+        List<Listing> results = new ArrayList<>();
+        try {
+            results = Elasticsearch.getSearchResults(client, SearchRequest);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // Write search results into response body
+        response.getWriter().print(new ObjectMapper().writeValueAsString(results));
+
     }
 }
