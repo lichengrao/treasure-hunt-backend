@@ -119,19 +119,46 @@ public class Listing {
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Builder {
+        @JsonProperty("listing_id")
         private String listingId;
+
+        @JsonProperty("title")
         private String title;
+
+        @JsonProperty("price")
         private double price;
+
+        @JsonProperty("category")
         private String category;
+
+        @JsonProperty("seller_id")
         private String sellerId;
+
+        @JsonProperty("seller_name")
         private String sellerName;
+
+        @JsonProperty("description")
         private String description;
+
+        @JsonProperty("item_condition")
         private String itemCondition;
+
+        @JsonProperty("brand")
         private String brand;
+
+        @JsonProperty("address")
         private String address;
+
+        @JsonProperty("picture_urls")
         private LinkedHashMap<String, String> pictureUrls;
+
+        @JsonProperty("date")
         private String date;
+
+        @JsonProperty("geo_location")
         private GeocodeLocation geocodeLocation;
+
+        @JsonProperty("city_and_state")
         private String cityAndState;
 
         public Builder setListingId(String listingId) {
