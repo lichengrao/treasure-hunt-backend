@@ -2,14 +2,10 @@ package com.treasurehunt.treasurehunt.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.treasurehunt.treasurehunt.db.elasticsearch.Elasticsearch;
-import com.treasurehunt.treasurehunt.db.elasticsearch.ElasticsearchClient;
-import com.treasurehunt.treasurehunt.entity.GeocodeLocation;
+import com.treasurehunt.treasurehunt.db.elasticsearch.ElasticsearchException;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import com.treasurehunt.treasurehunt.entity.SearchListingsRequestBody;
-import com.treasurehunt.treasurehunt.utils.ServletUtil;
-import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +15,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
 
 @WebServlet(name = "SearchServlet", urlPatterns = {"/search"})
 public class SearchServlet extends HttpServlet {
@@ -38,8 +34,8 @@ public class SearchServlet extends HttpServlet {
         if (keyword != null) {
             // Retrieve all filters from request url
             builder.setKeyword(keyword)
-                    .setLatitude(Double.parseDouble(request.getParameter("latitude")))
-                    .setLongitude(Double.parseDouble(request.getParameter("longitude")));
+                   .setLatitude(Double.parseDouble(request.getParameter("latitude")))
+                   .setLongitude(Double.parseDouble(request.getParameter("longitude")));
 
             if (request.getParameter("radius") != null) {
                 builder.setDistance(request.getParameter("radius"));
@@ -50,23 +46,25 @@ public class SearchServlet extends HttpServlet {
             if (request.getParameter("max_price") != null) {
                 double max = Double.parseDouble(request.getParameter("max_price"));
                 if (max < 0.0) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                     response.getWriter().println("price cannot be negative");
+                    return;
                 } else {
                     builder.setMaxPrice(max);
                 }
             }
+
             if (request.getParameter("min_price") != null) {
                 double min = Double.parseDouble(request.getParameter("min_price"));
-                if (min < 0.0) {
-                    response.getWriter().println("price cannot be negative");
-                } else {
-                    builder.setMinPrice(min);
-                }
+                builder.setMinPrice(min);
             }
+
             if (request.getParameter("time_interval") != null) {
                 long interval = Long.parseLong(request.getParameter("time_interval"));
                 if (interval < 0) {
-                    response.getWriter().println("price cannot be negative");
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().println("interval cannot be negative");
+                    return;
                 } else {
                     builder.setTimeInterval(interval);
                 }
@@ -81,7 +79,16 @@ public class SearchServlet extends HttpServlet {
 
         // Get search results
         RestHighLevelClient client = (RestHighLevelClient) request.getServletContext().getAttribute("es-client");
-        List<Listing> finalResult = Elasticsearch.getSearchResults(client, requestBody);
+        List<Listing> finalResult;
+
+        try {
+            finalResult = Elasticsearch.getSearchResults(client, requestBody);
+        } catch (ElasticsearchException e) {
+            logger.warn("Failed to get search results from Elasicsearch", e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().print("Failed to get search results from Elasticsearch");
+            return;
+        }
         // Write search results into response body
         response.setStatus(200);
         response.setContentType("application/json;charset=UTF-8");

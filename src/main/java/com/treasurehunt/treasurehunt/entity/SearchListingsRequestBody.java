@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-import java.util.Map;
-
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(builder = Listing.Builder.class)
@@ -30,6 +28,21 @@ public class SearchListingsRequestBody {
     private double minPrice;
     @JsonProperty("timeInterval")
     private long timeInterval;
+
+    public SearchListingsRequestBody(Builder builder) {
+        this.keyword = builder.keyword;
+        this.category = builder.category;
+        this.condition = builder.condition;
+        this.longitude = builder.longitude;
+        this.latitude = builder.latitude;
+        this.distance = builder.distance;
+        this.maxPrice = builder.maxPrice;
+        this.minPrice = builder.minPrice;
+        this.timeInterval = builder.timeInterval;
+    }
+
+    public SearchListingsRequestBody() {
+    }
 
     public String getKeyword() {
         return keyword;
@@ -65,21 +78,6 @@ public class SearchListingsRequestBody {
 
     public long getTmeInterval() {
         return timeInterval;
-    }
-
-    public SearchListingsRequestBody(Builder builder) {
-        this.keyword = builder.keyword;
-        this.category = builder.category;
-        this.condition = builder.condition;
-        this.longitude = builder.longitude;
-        this.latitude = builder.latitude;
-        this.distance = builder.distance;
-        this.maxPrice = builder.maxPrice;
-        this.minPrice = builder.minPrice;
-        this.timeInterval = builder.timeInterval;
-    }
-
-    public SearchListingsRequestBody() {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
