@@ -42,14 +42,15 @@ public class Elasticsearch {
 
     // Deployment - double check here
     private static final String LISTINGS_INDEX = "listings";
+    private static final int MAX_NUMBER_OF_SEARCH_RESULTS = 30;
 
     // Build request object for Elasticsearch query
-    public static SearchRequest buildListingsSearchRequest(SearchListingsRequestBody requestBody) throws IOException {
+    private static SearchRequest buildListingsSearchRequest(SearchListingsRequestBody requestBody) throws IOException {
         SearchRequest searchRequest = new SearchRequest(LISTINGS_INDEX);
 
         // Configure searchRequest with data in the requestBody
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        sourceBuilder.size(30);
+        sourceBuilder.size(MAX_NUMBER_OF_SEARCH_RESULTS);
         sourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
         sourceBuilder.sort(new FieldSortBuilder("price").order(SortOrder.ASC));
 
@@ -58,8 +59,7 @@ public class Elasticsearch {
 
             // BoolQueryBuilder is used to assemble query conditions.
             BoolQueryBuilder boolBuilder = QueryBuilders.boolQuery();
-            boolBuilder.must(QueryBuilders.matchQuery("title", requestBody.getKeyword()));
-            boolBuilder.should(QueryBuilders.matchQuery("description", requestBody.getKeyword()));
+            boolBuilder.must(QueryBuilders.multiMatchQuery(requestBody.getKeyword(), "title", "description"));
             if (requestBody.getCondition() != null) {
                 boolBuilder.filter(QueryBuilders.termQuery("item_condition", requestBody.getCondition()));
             }
