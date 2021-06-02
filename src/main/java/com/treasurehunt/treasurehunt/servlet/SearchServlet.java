@@ -38,8 +38,8 @@ public class SearchServlet extends HttpServlet {
         if (keyword != null) {
             // Retrieve all filters from request url
             builder.setKeyword(keyword)
-                    .setLatitude(Double.valueOf(request.getParameter("latitude")))
-                    .setLongitude(Double.valueOf(request.getParameter("longitude")));
+                    .setLatitude(Double.parseDouble(request.getParameter("latitude")))
+                    .setLongitude(Double.parseDouble(request.getParameter("longitude")));
 
             if (request.getParameter("radius") != null) {
                 builder.setDistance(request.getParameter("radius"));
@@ -48,7 +48,7 @@ public class SearchServlet extends HttpServlet {
                 builder.setCondition(request.getParameter("condition"));
             }
             if (request.getParameter("max_price") != null) {
-                double max = Double.valueOf(request.getParameter("max_price"));
+                double max = Double.parseDouble(request.getParameter("max_price"));
                 if (max < 0.0) {
                     response.getWriter().println("price cannot be negative");
                 } else {
@@ -56,7 +56,7 @@ public class SearchServlet extends HttpServlet {
                 }
             }
             if (request.getParameter("min_price") != null) {
-                double min = Double.valueOf(request.getParameter("min_price"));
+                double min = Double.parseDouble(request.getParameter("min_price"));
                 if (min < 0.0) {
                     response.getWriter().println("price cannot be negative");
                 } else {
@@ -83,6 +83,8 @@ public class SearchServlet extends HttpServlet {
         RestHighLevelClient client = (RestHighLevelClient) request.getServletContext().getAttribute("es-client");
         List<Listing> finalResult = Elasticsearch.getSearchResults(client, requestBody);
         // Write search results into response body
+        response.setStatus(200);
+        response.setContentType("application/json;charset=UTF-8");
         response.getWriter().print(new ObjectMapper().writeValueAsString(finalResult));
     }
 }

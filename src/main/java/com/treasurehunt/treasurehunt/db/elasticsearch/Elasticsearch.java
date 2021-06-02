@@ -59,6 +59,7 @@ public class Elasticsearch {
             // BoolQueryBuilder is used to assemble query conditions.
             BoolQueryBuilder boolBuilder = QueryBuilders.boolQuery();
             boolBuilder.must(QueryBuilders.matchQuery("title", requestBody.getKeyword()));
+            boolBuilder.should(QueryBuilders.matchQuery("description", requestBody.getKeyword()));
             if (requestBody.getCondition() != null) {
                 boolBuilder.filter(QueryBuilders.termQuery("item_condition", requestBody.getCondition()));
             }
@@ -172,7 +173,6 @@ public class Elasticsearch {
             builder.startObject();
             {
                 // listing_id
-                // TODO we already have listingId
                 builder.field("listing_id", listing.getListingId());
                 // title
                 builder.field("title", listing.getTitle());
@@ -228,7 +228,6 @@ public class Elasticsearch {
             builder.startObject();
             {
                 // listing_id
-                // TODO we already have listingId
                 builder.field("listing_id", listing.getListingId());
                 // title
                 builder.field("title", listing.getTitle());
