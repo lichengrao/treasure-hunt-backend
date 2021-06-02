@@ -1,5 +1,6 @@
 package com.treasurehunt.treasurehunt.db.elasticsearch;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import com.treasurehunt.treasurehunt.entity.SearchListingsRequestBody;
@@ -16,8 +17,6 @@ import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermQueryBuilder;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -27,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -91,48 +91,31 @@ public class Elasticsearch {
         return searchRequest;
     }
 
-    // Send the request to Elasticsearch and receive the raw response
-    public static SearchHits getSearchHits(RestHighLevelClient client, SearchRequest searchRequest) throws ElasticsearchException {
-        try {
-            // Send the request to Elasticsearch, and receive the results in searchResponse
-            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-
-            // The SearchHits provides global information about all hits, like total number of hits or the maximum score
-            return searchResponse.getHits();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new ElasticsearchException("Unable to receive search results from Elasticsearch");
-        }
-    }
-
     // Search the listings index and return a list of listings
     public static List<Listing> getSearchResults(RestHighLevelClient client,
                                                  SearchListingsRequestBody requestBody) throws ElasticsearchException {
 
         try {
             // Get raw search results from Elasticsearch
-            SearchHits searchHits = getSearchHits(client, buildListingsSearchRequest(requestBody));
+            SearchRequest searchRequest = buildListingsSearchRequest(requestBody);
+            SearchResponse rawSearchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
             // Create list of search results
-            List<Listing> listingsSearchResults = new ArrayList<>();
+            List<Listing> searchResults = new ArrayList<>();
+            ObjectMapper objectMapper = new ObjectMapper();
 
-            for (SearchHit hit : searchHits.getHits()) {
-
-                // read hit as Listing
-                ObjectMapper objectMapper = new ObjectMapper();
-
-                listingsSearchResults.add(objectMapper.readValue(hit.getSourceAsString(), Listing.class));
-
-                // Extra Reading : you may also retrieve each SearchHit as a JSON string
-//                String sourceAsString = hit.getSourceAsString();
-//                JSONObject result = new JSONObject(sourceAsString);
-//                JSONArray rawSearchResults = new JSONArray();
-//                rawSearchResults.put(result);
-            }
+            // Stream results into listingSearchResults
+            Arrays.stream(rawSearchResponse.getHits().getHits()).forEach(hit -> {
+                try {
+                    searchResults
+                            .add(objectMapper.readValue(hit.getSourceAsString(), Listing.class));
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+            });
 
             // Return the responseBody
-            return listingsSearchResults;
+            return searchResults;
         } catch (Exception e) {
             e.printStackTrace();
             throw new ElasticsearchException("Unable to parse search results sent from Elasticsearch");
