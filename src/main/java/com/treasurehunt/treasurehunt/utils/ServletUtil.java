@@ -87,7 +87,7 @@ public class ServletUtil {
 
             Part filePart = request.getPart(String.format(fileNamePrefix, i));
             // In case that seller didn't upload all three pictures
-            if (filePart == null) {
+            if (filePart == null || filePart.getSubmittedFileName().equals("")) {
                 logger.info("Stopping, no file found at {}", String.format(fileNamePrefix, i));
                 return;
             }

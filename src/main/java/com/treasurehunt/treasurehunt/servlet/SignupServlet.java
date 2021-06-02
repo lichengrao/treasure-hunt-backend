@@ -36,6 +36,23 @@ public class SignupServlet extends HttpServlet {
             return;
         }
 
+        String userId = user.getUserId();
+
+        // Check if user_id already exists in MySQL db
+        DataSource pool = (DataSource) request.getServletContext().getAttribute("mysql-pool");
+        try (Connection conn = pool.getConnection()) {
+            User existingUser = MySQL.getUser(conn, userId);
+            if (existingUser != null) {
+                logger.warn("User {} already exists", userId);
+                response.setStatus(HttpServletResponse.SC_CONFLICT);
+                response.getWriter().print(String.format("User ID %s already exists", userId));
+                return;
+            }
+        } catch (SQLException e) {
+            logger.warn("Cannot add {} to users db", userId);
+            throw new ServletException(e);
+        }
+
         // Generate and set secure password and salt for user
         PasswordUtils.generateSecurePasswordForUser(user);
 
@@ -53,11 +70,10 @@ public class SignupServlet extends HttpServlet {
 
         // Save user in MySQL users db
         boolean isUserAdded;
-        DataSource pool = (DataSource) request.getServletContext().getAttribute("mysql-pool");
         try (Connection conn = pool.getConnection()) {
             isUserAdded = MySQL.addUser(conn, user);
         } catch (SQLException e) {
-            logger.warn("Cannot add {} to users db", user.getUserId());
+            logger.warn("Cannot add {} to users db", userId);
             throw new ServletException(e);
         }
 

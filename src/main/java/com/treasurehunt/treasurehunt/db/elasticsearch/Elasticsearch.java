@@ -1,6 +1,5 @@
 package com.treasurehunt.treasurehunt.db.elasticsearch;
 
-import com.alibaba.fastjson.support.geo.Point;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.treasurehunt.treasurehunt.entity.GeocodeLocation;
 import com.treasurehunt.treasurehunt.entity.Listing;
@@ -18,38 +17,37 @@ import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.builder.PointInTimeBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-
-import java.io.DataInput;
-import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class Elasticsearch {
 
     // Deployment - double check here
     private static final String LISTINGS_INDEX = "listings";
+    private static final int MAX_NUMBER_OF_SEARCH_RESULTS = 30;
+    private static final Logger logger = LoggerFactory.getLogger(Elasticsearch.class);
 
     // Build request object for Elasticsearch query
-    public static SearchRequest buildListingsSearchRequest(SearchListingsRequestBody requestBody) throws IOException {
+    private static SearchRequest buildListingsSearchRequest(SearchListingsRequestBody requestBody) throws ElasticsearchException {
         SearchRequest searchRequest = new SearchRequest(LISTINGS_INDEX);
 
         // Configure searchRequest with data in the requestBody
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-        sourceBuilder.size(30);
+        sourceBuilder.size(MAX_NUMBER_OF_SEARCH_RESULTS);
         sourceBuilder.timeout(new TimeValue(60, TimeUnit.SECONDS));
         sourceBuilder.sort(new FieldSortBuilder("price").order(SortOrder.ASC));
 
@@ -58,13 +56,17 @@ public class Elasticsearch {
 
             // BoolQueryBuilder is used to assemble query conditions.
             BoolQueryBuilder boolBuilder = QueryBuilders.boolQuery();
-            boolBuilder.must(QueryBuilders.matchQuery("title", requestBody.getKeyword()));
-            boolBuilder.should(QueryBuilders.matchQuery("description", requestBody.getKeyword()));
+
+            // Fuzzy searches keyword in title and description fields
+            boolBuilder.must(QueryBuilders.multiMatchQuery(requestBody.getKeyword(), "title", "description")
+                                          .fuzziness("AUTO"));
             if (requestBody.getCondition() != null) {
                 boolBuilder.filter(QueryBuilders.termQuery("item_condition", requestBody.getCondition()));
             }
             if (requestBody.getDistance() != null) {
-                boolBuilder.filter(QueryBuilders.geoDistanceQuery("location").point(requestBody.getLatitude(), requestBody.getLongitude()).distance(requestBody.getDistance(), DistanceUnit.MILES));
+                boolBuilder.filter(QueryBuilders.geoDistanceQuery("location")
+                                                .point(requestBody.getLatitude(), requestBody.getLongitude())
+                                                .distance(requestBody.getDistance(), DistanceUnit.MILES));
             }
             if (requestBody.getMaxPrice() != 0.0) {
                 boolBuilder.filter(QueryBuilders.rangeQuery("price").lte(requestBody.getMaxPrice()));
@@ -74,13 +76,17 @@ public class Elasticsearch {
             }
             if (requestBody.getTmeInterval() != 0) {
                 Instant now = Instant.now();
-                boolBuilder.filter(QueryBuilders.rangeQuery("date_created").from(now.minus(requestBody.getTmeInterval(), ChronoUnit.HOURS)));
+                boolBuilder.filter(QueryBuilders.rangeQuery("date_created")
+                                                .from(now.minus(requestBody.getTmeInterval(), ChronoUnit.HOURS)));
             }
             sourceBuilder.query(boolBuilder);
 
         } else if (requestBody.getCategory() != null) {
             TermQueryBuilder termQueryBuilder = new TermQueryBuilder("category", requestBody.getCategory());
             sourceBuilder.query(termQueryBuilder);
+        } else {
+            logger.warn("Elasticsearch query does not contain keyword or category");
+            throw new ElasticsearchException("Search query does not contain keyword or category");
         }
 
         searchRequest.source(sourceBuilder);
@@ -90,18 +96,14 @@ public class Elasticsearch {
     }
 
     // Send the request to Elasticsearch and receive the raw response
-    public static SearchHit[] getRawSearchResults(RestHighLevelClient client, SearchRequest searchRequest) throws ElasticsearchException {
+    public static SearchHits getSearchHits(RestHighLevelClient client, SearchRequest searchRequest) throws ElasticsearchException {
         try {
             // Send the request to Elasticsearch, and receive the results in searchResponse
             SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
             // The SearchHits provides global information about all hits, like total number of hits or the maximum score
-            SearchHits hits = searchResponse.getHits();
+            return searchResponse.getHits();
 
-            // SearchHit provides access to basic information (Note: SearchHit and SearchHits are two different classes)
-            SearchHit[] searchHits = hits.getHits();
-
-            return searchHits;
         } catch (Exception e) {
             e.printStackTrace();
             throw new ElasticsearchException("Unable to receive search results from Elasticsearch");
@@ -114,17 +116,18 @@ public class Elasticsearch {
 
         try {
             // Get raw search results from Elasicsearch
-            SearchHit[] searchHits = getRawSearchResults(client, buildListingsSearchRequest(requestBody));
+            SearchHits searchHits = getSearchHits(client, buildListingsSearchRequest(requestBody));
 
             // Create list of search results
             List<Listing> listingsSearchResults = new ArrayList<>();
 
-            for (SearchHit hit : searchHits) {
+            for (SearchHit hit : searchHits.getHits()) {
 
                 // Retrieve each SearchHit as a Map
                 Map<String, Object> resultMap = hit.getSourceAsMap();
 
                 // Get GeocodeLocation from the map
+                // TODO : try to use mapper
                 Map<String, Double> geoPointParameters = (Map<String, Double>) resultMap.get("location");
                 GeocodeLocation.Builder geoBuilder = new GeocodeLocation.Builder();
                 geoBuilder.latitude(geoPointParameters.get("lat")).longitude(geoPointParameters.get("lon"));
@@ -133,18 +136,18 @@ public class Elasticsearch {
                 // Build the Listing java object
                 Listing.Builder builder = new Listing.Builder();
                 builder.setGeocodeLocation(geoPoint)
-                        .setPictureUrls(DbUtils.readPictureUrls(resultMap.get("picture_urls").toString()))
-                        .setListingId(resultMap.get("listing_id").toString())
-                        .setTitle(resultMap.get("title").toString())
-                        .setPrice((Double) resultMap.get("price"))
-                        .setCategory(resultMap.get("category").toString())
-                        .setSellerName(resultMap.get("seller_name").toString())
-                        .setBrand(resultMap.get("brand").toString())
-                        .setItemCondition(resultMap.get("item_condition").toString())
-                        .setDescription(resultMap.get("description").toString())
-                        .setAddress(resultMap.get("address").toString())
-                        .setCityAndState(resultMap.get("city_and_state").toString())
-                        .setDate(resultMap.get("date_created").toString());
+                       .setPictureUrls(DbUtils.readPictureUrls(resultMap.get("picture_urls").toString()))
+                       .setListingId(resultMap.get("listing_id").toString())
+                       .setTitle(resultMap.get("title").toString())
+                       .setPrice((Double) resultMap.get("price"))
+                       .setCategory(resultMap.get("category").toString())
+                       .setSellerName(resultMap.get("seller_name").toString())
+                       .setBrand(resultMap.get("brand").toString())
+                       .setItemCondition(resultMap.get("item_condition").toString())
+                       .setDescription(resultMap.get("description").toString())
+                       .setAddress(resultMap.get("address").toString())
+                       .setCityAndState(resultMap.get("city_and_state").toString())
+                       .setDate(resultMap.get("date_created").toString());
 
                 Listing item = builder.build();
 
