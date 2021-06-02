@@ -10,7 +10,6 @@ import java.util.LinkedHashMap;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(builder = Listing.Builder.class)
-
 public class Listing {
     @JsonProperty("listing_id")
     private String listingId;

@@ -33,6 +33,13 @@ public class ElasticsearchIndexCreator {
                         builder.endObject();
 
                         // title
+                        builder.startObject("price");
+                        {
+                            builder.field("type", "double");
+                        }
+                        builder.endObject();
+
+                        // title
                         builder.startObject("title");
                         {
                             builder.field("type", "text");
@@ -80,6 +87,13 @@ public class ElasticsearchIndexCreator {
                         {
                             builder.field("type", "keyword");
                             builder.field("index", false);
+                        }
+                        builder.endObject();
+
+                        // city and state
+                        builder.startObject("city_and_state");
+                        {
+                            builder.field("type", "keyword");
                         }
                         builder.endObject();
 
