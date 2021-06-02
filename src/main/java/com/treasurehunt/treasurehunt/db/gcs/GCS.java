@@ -9,7 +9,7 @@ import java.io.InputStream;
 public class GCS {
 
     // Deployment: change for deployment
-    private static final String bucketName = "thpictures";
+    private static final String bucketName = "treasure-hunt-listing-pictures";
     private static final Logger logger = LoggerFactory.getLogger(GCS.class);
 
     // Upload picture to listing-pictures bucket in GCS
