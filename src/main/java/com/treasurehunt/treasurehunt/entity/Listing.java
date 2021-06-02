@@ -144,6 +144,7 @@ public class Listing {
             return this;
         }
 
+
         public Builder setPrice(double price) {
             this.price = price;
             return this;
