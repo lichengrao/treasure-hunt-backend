@@ -60,6 +60,7 @@ public class MySQLTableCreator {
                         + "picture_urls JSON, "
                         + "seller_id VARCHAR(255) NOT NULL, "
                         + "seller_name VARCHAR(255) NOT NULL, "
+                        + "seller_email VARCHAR(255) NOT NULL, "
                         + "address VARCHAR(255) NOT NULL, "
                         + "date VARCHAR(255) NOT NULL, "
                         + "geo_location VARCHAR(255) NOT NULL, "

@@ -96,6 +96,7 @@ public class ListingServlet extends HttpServlet {
                .setBrand(request.getParameter("brand"))
                .setPictureUrls(pictureUrls)
                .setSellerName(String.format("%s %s", user.getFirstName(), user.getLastName()))
+               .setSellerEmail(user.getEmail())
                .setAddress(user.getAddress())
                .setGeocodeLocation(user.getGeocodeLocation())
                .setCityAndState(user.getCityAndState())

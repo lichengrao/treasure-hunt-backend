@@ -23,6 +23,8 @@ public class Listing {
     private String sellerId;
     @JsonProperty("seller_name")
     private String sellerName;
+    @JsonProperty("seller_email")
+    private String sellerEmail;
     @JsonProperty("description")
     private String description;
     @JsonProperty("item_condition")
@@ -47,6 +49,7 @@ public class Listing {
         this.category = builder.category;
         this.sellerId = builder.sellerId;
         this.sellerName = builder.sellerName;
+        this.sellerEmail = builder.sellerEmail;
         this.description = builder.description;
         this.itemCondition = builder.itemCondition;
         this.address = builder.address;
@@ -82,6 +85,10 @@ public class Listing {
 
     public String getSellerName() {
         return sellerName;
+    }
+
+    public String getSellerEmail() {
+        return sellerEmail;
     }
 
     public String getDescription() {
@@ -137,6 +144,9 @@ public class Listing {
         @JsonProperty("seller_name")
         private String sellerName;
 
+        @JsonProperty("seller_email")
+        private String sellerEmail;
+
         @JsonProperty("description")
         private String description;
 
@@ -189,6 +199,11 @@ public class Listing {
 
         public Builder setSellerName(String sellerName) {
             this.sellerName = sellerName;
+            return this;
+        }
+
+        public Builder setSellerEmail(String sellerEmail) {
+            this.sellerEmail = sellerEmail;
             return this;
         }
 

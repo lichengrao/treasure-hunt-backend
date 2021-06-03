@@ -53,7 +53,7 @@ public class MySQL {
     public static boolean createListing(Connection conn, Listing listing) throws MySQLException {
 
         // Insert the new data to listings db
-        String sql = String.format("INSERT INTO %s VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", LISTINGS_DB);
+        String sql = String.format("INSERT INTO %s VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", LISTINGS_DB);
 
         try (PreparedStatement postListing = conn.prepareStatement(sql)) {
 
@@ -69,10 +69,11 @@ public class MySQL {
             postListing.setString(8, objectMapper.writeValueAsString(listing.getPictureUrls()));
             postListing.setString(9, listing.getSellerId());
             postListing.setString(10, listing.getSellerName());
-            postListing.setString(11, listing.getAddress());
-            postListing.setString(12, listing.getDate());
-            postListing.setString(13, objectMapper.writeValueAsString(listing.getGeocodeLocation()));
-            postListing.setString(14, listing.getCityAndState());
+            postListing.setString(11, listing.getSellerEmail());
+            postListing.setString(12, listing.getAddress());
+            postListing.setString(13, listing.getDate());
+            postListing.setString(14, objectMapper.writeValueAsString(listing.getGeocodeLocation()));
+            postListing.setString(15, listing.getCityAndState());
 
             return postListing.executeUpdate() == 1;
 
@@ -251,6 +252,7 @@ public class MySQL {
                        .setPictureUrls(DbUtils.readPictureUrls(rs.getString("picture_urls")))
                        .setSellerId(rs.getString("seller_id"))
                        .setSellerName(rs.getString("seller_name"))
+                       .setSellerEmail(rs.getString("seller_email"))
                        .setAddress(rs.getString("address"))
                        .setDate(rs.getString("date"))
                        .setGeocodeLocation(new ObjectMapper()

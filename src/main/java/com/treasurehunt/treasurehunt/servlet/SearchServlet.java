@@ -33,49 +33,52 @@ public class SearchServlet extends HttpServlet {
         String keyword = request.getParameter("keyword");
         if (keyword != null) {
             // Retrieve all filters from request url
-            builder.setKeyword(keyword)
-                   .setLatitude(Double.parseDouble(request.getParameter("latitude")))
-                   .setLongitude(Double.parseDouble(request.getParameter("longitude")));
+            builder.setKeyword(keyword);
+        }
 
-            if (request.getParameter("radius") != null) {
-                builder.setDistance(request.getParameter("radius"));
-            }
-            if (request.getParameter("condition") != null) {
-                builder.setCondition(request.getParameter("condition"));
-            }
-            if (request.getParameter("max_price") != null) {
-                double max = Double.parseDouble(request.getParameter("max_price"));
-                if (max < 0.0) {
-                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    response.getWriter().println("price cannot be negative");
-                    return;
-                } else {
-                    builder.setMaxPrice(max);
-                }
-            }
+        if (request.getParameter("radius") != null && request.getParameter("latitude") != null && request
+                .getParameter("longitude") != null) {
+            builder.setLatitude(Double.parseDouble(request.getParameter("latitude")))
+                   .setLongitude(Double.parseDouble(request.getParameter("longitude")))
+                   .setDistance(request.getParameter("radius"));
+        }
 
-            if (request.getParameter("min_price") != null) {
-                double min = Double.parseDouble(request.getParameter("min_price"));
-                builder.setMinPrice(min);
-            }
+        if (request.getParameter("condition") != null) {
+            builder.setCondition(request.getParameter("condition"));
+        }
 
-            if (request.getParameter("time_interval") != null) {
-                long interval = Long.parseLong(request.getParameter("time_interval"));
-                if (interval < 0) {
-                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    response.getWriter().println("interval cannot be negative");
-                    return;
-                } else {
-                    builder.setTimeInterval(interval);
-                }
+        if (request.getParameter("max_price") != null) {
+            double max = Double.parseDouble(request.getParameter("max_price"));
+            if (max < 0.0) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().println("price cannot be negative");
+                return;
+            } else {
+                builder.setMaxPrice(max);
             }
+        }
 
-        } else {
+        if (request.getParameter("min_price") != null) {
+            double min = Double.parseDouble(request.getParameter("min_price"));
+            builder.setMinPrice(min);
+        }
+
+        if (request.getParameter("time_interval") != null) {
+            long interval = Long.parseLong(request.getParameter("time_interval"));
+            if (interval < 0) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().println("interval cannot be negative");
+                return;
+            } else {
+                builder.setTimeInterval(interval);
+            }
+        }
+
+        if (request.getParameter("category") != null) {
             builder.setCategory(request.getParameter("category"));
         }
 
         SearchListingsRequestBody requestBody = builder.build();
-
 
         // Get search results
         RestHighLevelClient client = (RestHighLevelClient) request.getServletContext().getAttribute("es-client");
@@ -84,7 +87,7 @@ public class SearchServlet extends HttpServlet {
         try {
             finalResult = Elasticsearch.getSearchResults(client, requestBody);
         } catch (ElasticsearchException e) {
-            logger.warn("Failed to get search results from Elasicsearch", e);
+            logger.warn("Failed to get search results from Elasticsearch", e);
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().print("Failed to get search results from Elasticsearch");
             return;

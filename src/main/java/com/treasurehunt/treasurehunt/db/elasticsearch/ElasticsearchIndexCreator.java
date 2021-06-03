@@ -61,6 +61,14 @@ public class ElasticsearchIndexCreator {
                         }
                         builder.endObject();
 
+                        // seller_email
+                        builder.startObject("seller_email");
+                        {
+                            builder.field("type", "keyword");
+                            builder.field("index", false);
+                        }
+                        builder.endObject();
+
                         // brand
                         builder.startObject("brand");
                         {
