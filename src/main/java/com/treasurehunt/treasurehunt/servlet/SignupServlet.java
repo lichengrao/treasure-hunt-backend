@@ -28,6 +28,7 @@ public class SignupServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
             IOException {
+
         // Reader user data from the request body
         User user = ServletUtil.readRequestBody(User.class, request);
         if (user == null) {
@@ -66,6 +67,7 @@ public class SignupServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().print(String.format("Invalid address: %s%n", user.getAddress()));
             logger.warn("Geocode API unable to parse address: {}", user.getAddress());
+            return;
         }
 
         // Save user in MySQL users db
