@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.storage.Storage;
 import com.treasurehunt.treasurehunt.db.elasticsearch.Elasticsearch;
 import com.treasurehunt.treasurehunt.db.mysql.MySQL;
+import com.treasurehunt.treasurehunt.db.mysql.MySQLException;
 import com.treasurehunt.treasurehunt.entity.DeleteListingRequestBody;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import com.treasurehunt.treasurehunt.entity.User;
@@ -28,7 +29,7 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 
 @MultipartConfig
-@WebServlet(name = "ListingServlet", urlPatterns = {"/listing"})
+@WebServlet(name = "ListingServlet", urlPatterns = {"/api/listing"})
 public class ListingServlet extends HttpServlet {
 
     private static final Logger logger = LoggerFactory.getLogger(ListingServlet.class);
@@ -148,16 +149,22 @@ public class ListingServlet extends HttpServlet {
             IOException {
 
         String listingId = request.getParameter("listing_id");
-        Listing listing = new Listing();
+        Listing listing;
 
         DataSource pool = (DataSource) request.getServletContext().getAttribute("mysql-pool");
         try (Connection conn = pool.getConnection()) {
             listing = MySQL.getListing(conn, listingId);
+        } catch (MySQLException e) {
+            logger.info("Listing not found: {}", listingId);
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().write("Listing not found!");
+            return;
         } catch (SQLException e) {
             logger.warn("Error while attempting to get listing from MySQL db", e);
             response.setStatus(500);
             response.getWriter().write("Unable to successfully get listing! Please check the application logs for " +
                     "more details.");
+            return;
         }
 
         response.setContentType("application/json;charset=UTF-8");

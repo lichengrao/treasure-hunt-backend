@@ -10,6 +10,7 @@ import com.treasurehunt.treasurehunt.utils.DbUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -232,7 +233,7 @@ public class MySQL {
     }
 
     // Get Listing from listings db
-    public static Listing getListing(Connection conn, String listingId) throws MySQLException {
+    public static Listing getListing(Connection conn, String listingId) throws MySQLException, SQLException {
         Listing listing = new Listing();
 
         String sql = "SELECT * FROM listings WHERE listing_id = ?";
@@ -259,11 +260,13 @@ public class MySQL {
                                .readValue(rs.getString("geo_location"), GeocodeLocation.class))
                        .setCityAndState(rs.getString("city_and_state"));
                 listing = builder.build();
+                return listing;
+            } else {
+                throw new MySQLException("Listing does not exist");
             }
-            return listing;
-        } catch (Exception e) {
+        } catch (SQLException | IOException e) {
             e.printStackTrace();
-            throw new MySQLException("Failed to get listing from DB");
+            throw new SQLException("Failed to get listing from DB");
         }
     }
 

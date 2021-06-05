@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-@WebServlet(name = "SaveServlet", urlPatterns = {"/save"})
+@WebServlet(name = "SaveServlet", urlPatterns = {"/api/save"})
 public class SaveServlet extends HttpServlet {
 
     private static final Logger logger = LoggerFactory.getLogger(SaveServlet.class);

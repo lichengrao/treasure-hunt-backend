@@ -41,6 +41,7 @@ public class GoogleMapsClient {
             prop.load(inputStream);
         } catch (IOException e) {
             e.printStackTrace();
+            throw new GoogleMapsException("Failed to load props");
         }
 
         String api_key = prop.getProperty("google_maps_geocode_api_key");
@@ -50,6 +51,7 @@ public class GoogleMapsClient {
             address = URLEncoder.encode(address, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
+            throw new GoogleMapsException("Failed to encode address");
         }
         return String.format(url, address, api_key);
     }

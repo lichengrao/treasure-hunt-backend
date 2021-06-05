@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-@WebServlet(name = "SignupServlet", urlPatterns = {"/signup"})
+@WebServlet(name = "SignupServlet", urlPatterns = {"/api/signup"})
 public class SignupServlet extends HttpServlet {
 
     private static final Logger logger = LoggerFactory.getLogger(SignupServlet.class);

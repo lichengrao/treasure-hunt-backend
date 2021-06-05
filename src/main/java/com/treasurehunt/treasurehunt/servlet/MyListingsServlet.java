@@ -18,7 +18,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
-@WebServlet(name = "MyListingsServlet", urlPatterns = {"/my-listings"})
+@WebServlet(name = "MyListingsServlet", urlPatterns = {"/api/my-listings"})
 public class MyListingsServlet extends HttpServlet {
     // TODO: Last edited by Ruichen
 
