@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-@WebServlet(name = "SaveServlet", urlPatterns = {"/save"})
+@WebServlet(name = "SaveServlet", urlPatterns = {"/api/save"})
 public class SaveServlet extends HttpServlet {
 
     private static final Logger logger = LoggerFactory.getLogger(SaveServlet.class);
@@ -47,7 +47,7 @@ public class SaveServlet extends HttpServlet {
             logger.warn("Unauthorized: user_id {} is not the same as authorized user {}", body
                     .getUserId(), authorizedUserId);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().print("Token invalid");
+            response.getWriter().print("Invalid token");
             return;
         }
         // Get a connection from MySQL connection pool
@@ -58,6 +58,8 @@ public class SaveServlet extends HttpServlet {
         } catch (SQLException e) {
             throw new ServletException(e);
         }
+
+        response.setStatus(201);
     }
 
     @Override

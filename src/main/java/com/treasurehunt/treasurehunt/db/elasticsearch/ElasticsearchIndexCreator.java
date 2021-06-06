@@ -32,7 +32,7 @@ public class ElasticsearchIndexCreator {
                         }
                         builder.endObject();
 
-                        // title
+                        // price
                         builder.startObject("price");
                         {
                             builder.field("type", "double");
@@ -55,6 +55,14 @@ public class ElasticsearchIndexCreator {
 
                         // seller_name
                         builder.startObject("seller_name");
+                        {
+                            builder.field("type", "keyword");
+                            builder.field("index", false);
+                        }
+                        builder.endObject();
+
+                        // seller_email
+                        builder.startObject("seller_email");
                         {
                             builder.field("type", "keyword");
                             builder.field("index", false);
@@ -98,7 +106,7 @@ public class ElasticsearchIndexCreator {
                         builder.endObject();
 
                         // location
-                        builder.startObject("location");
+                        builder.startObject("geo_location");
                         {
                             builder.field("type", "geo_point");
                         }
@@ -109,13 +117,13 @@ public class ElasticsearchIndexCreator {
                         // Any field can contain zero or more values by default
                         builder.startObject("picture_urls");
                         {
-                            builder.field("type", "keyword");
-                            builder.field("index", false);
+                            builder.field("type", "object");
+                            builder.field("enabled", false);
                         }
                         builder.endObject();
 
                         // date_created
-                        builder.startObject("date_created");
+                        builder.startObject("date");
                         {
                             builder.field("type", "date");
                         }

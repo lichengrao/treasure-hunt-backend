@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.storage.Storage;
 import com.treasurehunt.treasurehunt.db.elasticsearch.Elasticsearch;
 import com.treasurehunt.treasurehunt.db.mysql.MySQL;
+import com.treasurehunt.treasurehunt.db.mysql.MySQLException;
 import com.treasurehunt.treasurehunt.entity.DeleteListingRequestBody;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import com.treasurehunt.treasurehunt.entity.User;
@@ -28,7 +29,7 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 
 @MultipartConfig
-@WebServlet(name = "ListingServlet", urlPatterns = {"/listing"})
+@WebServlet(name = "ListingServlet", urlPatterns = {"/api/listing"})
 public class ListingServlet extends HttpServlet {
 
     private static final Logger logger = LoggerFactory.getLogger(ListingServlet.class);
@@ -50,7 +51,7 @@ public class ListingServlet extends HttpServlet {
         // Verify the two id's are equal
         if (!authorizedUserId.equals(sellerId)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().print("Token invalid");
+            response.getWriter().print("Invalid token");
             return;
         }
 
@@ -76,6 +77,7 @@ public class ListingServlet extends HttpServlet {
             response.setStatus(500);
             response.getWriter().write("Unable to successfully create listing! Please check the application logs for " +
                     "more details.");
+            return;
         }
 
         // return if cannot find user in user db
@@ -96,6 +98,7 @@ public class ListingServlet extends HttpServlet {
                .setBrand(request.getParameter("brand"))
                .setPictureUrls(pictureUrls)
                .setSellerName(String.format("%s %s", user.getFirstName(), user.getLastName()))
+               .setSellerEmail(user.getEmail())
                .setAddress(user.getAddress())
                .setGeocodeLocation(user.getGeocodeLocation())
                .setCityAndState(user.getCityAndState())
@@ -137,7 +140,7 @@ public class ListingServlet extends HttpServlet {
 
         // ListingId is return as the respondBody
         // so no need to serialize Java objects into JSON string
-        response.setStatus(200);
+        response.setStatus(201);
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().print(listingId);
     }
@@ -147,16 +150,22 @@ public class ListingServlet extends HttpServlet {
             IOException {
 
         String listingId = request.getParameter("listing_id");
-        Listing listing = new Listing();
+        Listing listing;
 
         DataSource pool = (DataSource) request.getServletContext().getAttribute("mysql-pool");
         try (Connection conn = pool.getConnection()) {
             listing = MySQL.getListing(conn, listingId);
+        } catch (MySQLException e) {
+            logger.info("Listing not found: {}", listingId);
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().write("Listing not found!");
+            return;
         } catch (SQLException e) {
             logger.warn("Error while attempting to get listing from MySQL db", e);
             response.setStatus(500);
             response.getWriter().write("Unable to successfully get listing! Please check the application logs for " +
                     "more details.");
+            return;
         }
 
         response.setContentType("application/json;charset=UTF-8");
@@ -180,7 +189,7 @@ public class ListingServlet extends HttpServlet {
         // Verify the two id's are equal
         if (!authorizedUserId.equals(sellerId)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().print("Token invalid");
+            response.getWriter().print("Invalid token");
             return;
         }
 
@@ -195,6 +204,7 @@ public class ListingServlet extends HttpServlet {
             response.setStatus(500);
             response.getWriter().write("Unable to successfully get listing! Please check the application logs for " +
                     "more details.");
+            return;
         }
 
         // Check if existing seller_id is the same as the seller_id, if not, set unauthorized
@@ -202,6 +212,7 @@ public class ListingServlet extends HttpServlet {
             logger.info("Seller ids do not match {}, {}", sellerId, oldListing.getSellerId());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Unable to edit someone else's listing!");
+            return;
         }
 
         // Delete existing pictures from GCS
@@ -306,6 +317,7 @@ public class ListingServlet extends HttpServlet {
             response.setStatus(500);
             response.getWriter().write("Unable to successfully get listing! Please check the application logs for " +
                     "more details.");
+            return;
         }
 
         // Attempt to delete the listing from MySQL

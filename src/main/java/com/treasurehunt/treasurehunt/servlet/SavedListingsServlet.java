@@ -18,7 +18,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
-@WebServlet(name = "SavedListingsServlet", urlPatterns = {"/saved-listings"})
+@WebServlet(name = "SavedListingsServlet", urlPatterns = {"/api/saved-listings"})
 public class SavedListingsServlet extends HttpServlet {
 
     private static final Logger logger = LoggerFactory.getLogger(SavedListingsServlet.class);

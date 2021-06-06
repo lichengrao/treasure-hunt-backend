@@ -10,6 +10,7 @@ import com.treasurehunt.treasurehunt.utils.DbUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -53,7 +54,7 @@ public class MySQL {
     public static boolean createListing(Connection conn, Listing listing) throws MySQLException {
 
         // Insert the new data to listings db
-        String sql = String.format("INSERT INTO %s VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", LISTINGS_DB);
+        String sql = String.format("INSERT INTO %s VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", LISTINGS_DB);
 
         try (PreparedStatement postListing = conn.prepareStatement(sql)) {
 
@@ -69,10 +70,11 @@ public class MySQL {
             postListing.setString(8, objectMapper.writeValueAsString(listing.getPictureUrls()));
             postListing.setString(9, listing.getSellerId());
             postListing.setString(10, listing.getSellerName());
-            postListing.setString(11, listing.getAddress());
-            postListing.setString(12, listing.getDate());
-            postListing.setString(13, objectMapper.writeValueAsString(listing.getGeocodeLocation()));
-            postListing.setString(14, listing.getCityAndState());
+            postListing.setString(11, listing.getSellerEmail());
+            postListing.setString(12, listing.getAddress());
+            postListing.setString(13, listing.getDate());
+            postListing.setString(14, objectMapper.writeValueAsString(listing.getGeocodeLocation()));
+            postListing.setString(15, listing.getCityAndState());
 
             return postListing.executeUpdate() == 1;
 
@@ -231,7 +233,7 @@ public class MySQL {
     }
 
     // Get Listing from listings db
-    public static Listing getListing(Connection conn, String listingId) throws MySQLException {
+    public static Listing getListing(Connection conn, String listingId) throws MySQLException, SQLException {
         Listing listing = new Listing();
 
         String sql = "SELECT * FROM listings WHERE listing_id = ?";
@@ -251,17 +253,20 @@ public class MySQL {
                        .setPictureUrls(DbUtils.readPictureUrls(rs.getString("picture_urls")))
                        .setSellerId(rs.getString("seller_id"))
                        .setSellerName(rs.getString("seller_name"))
+                       .setSellerEmail(rs.getString("seller_email"))
                        .setAddress(rs.getString("address"))
                        .setDate(rs.getString("date"))
                        .setGeocodeLocation(new ObjectMapper()
                                .readValue(rs.getString("geo_location"), GeocodeLocation.class))
                        .setCityAndState(rs.getString("city_and_state"));
                 listing = builder.build();
+                return listing;
+            } else {
+                throw new MySQLException("Listing does not exist");
             }
-            return listing;
-        } catch (Exception e) {
+        } catch (SQLException | IOException e) {
             e.printStackTrace();
-            throw new MySQLException("Failed to get listing from DB");
+            throw new SQLException("Failed to get listing from DB");
         }
     }
 

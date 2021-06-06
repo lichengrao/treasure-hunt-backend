@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-@WebServlet(name = "SignupServlet", urlPatterns = {"/signup"})
+@WebServlet(name = "SignupServlet", urlPatterns = {"/api/signup"})
 public class SignupServlet extends HttpServlet {
 
     private static final Logger logger = LoggerFactory.getLogger(SignupServlet.class);
@@ -28,7 +28,8 @@ public class SignupServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
             IOException {
-        // Reader user data from the request body
+
+        // Read user data from the request body
         User user = ServletUtil.readRequestBody(User.class, request);
         if (user == null) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -66,6 +67,7 @@ public class SignupServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().print(String.format("Invalid address: %s%n", user.getAddress()));
             logger.warn("Geocode API unable to parse address: {}", user.getAddress());
+            return;
         }
 
         // Save user in MySQL users db
@@ -82,5 +84,7 @@ public class SignupServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_CONFLICT);
             response.getWriter().print("user_id taken");
         }
+
+        response.setStatus(201);
     }
 }

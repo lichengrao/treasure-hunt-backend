@@ -1,10 +1,9 @@
 package com.treasurehunt.treasurehunt.db.elasticsearch;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.treasurehunt.treasurehunt.entity.GeocodeLocation;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import com.treasurehunt.treasurehunt.entity.SearchListingsRequestBody;
-import com.treasurehunt.treasurehunt.utils.DbUtils;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
@@ -14,13 +13,10 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.TermQueryBuilder;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.FieldSortBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -30,8 +26,8 @@ import org.slf4j.LoggerFactory;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class Elasticsearch {
@@ -64,7 +60,7 @@ public class Elasticsearch {
                 boolBuilder.filter(QueryBuilders.termQuery("item_condition", requestBody.getCondition()));
             }
             if (requestBody.getDistance() != null) {
-                boolBuilder.filter(QueryBuilders.geoDistanceQuery("location")
+                boolBuilder.filter(QueryBuilders.geoDistanceQuery("geo_location")
                                                 .point(requestBody.getLatitude(), requestBody.getLongitude())
                                                 .distance(requestBody.getDistance(), DistanceUnit.MILES));
             }
@@ -76,7 +72,7 @@ public class Elasticsearch {
             }
             if (requestBody.getTmeInterval() != 0) {
                 Instant now = Instant.now();
-                boolBuilder.filter(QueryBuilders.rangeQuery("date_created")
+                boolBuilder.filter(QueryBuilders.rangeQuery("date")
                                                 .from(now.minus(requestBody.getTmeInterval(), ChronoUnit.HOURS)));
             }
             sourceBuilder.query(boolBuilder);
@@ -95,73 +91,31 @@ public class Elasticsearch {
         return searchRequest;
     }
 
-    // Send the request to Elasticsearch and receive the raw response
-    public static SearchHits getSearchHits(RestHighLevelClient client, SearchRequest searchRequest) throws ElasticsearchException {
-        try {
-            // Send the request to Elasticsearch, and receive the results in searchResponse
-            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-
-            // The SearchHits provides global information about all hits, like total number of hits or the maximum score
-            return searchResponse.getHits();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new ElasticsearchException("Unable to receive search results from Elasticsearch");
-        }
-    }
-
     // Search the listings index and return a list of listings
     public static List<Listing> getSearchResults(RestHighLevelClient client,
                                                  SearchListingsRequestBody requestBody) throws ElasticsearchException {
 
         try {
-            // Get raw search results from Elasicsearch
-            SearchHits searchHits = getSearchHits(client, buildListingsSearchRequest(requestBody));
+            // Get raw search results from Elasticsearch
+            SearchRequest searchRequest = buildListingsSearchRequest(requestBody);
+            SearchResponse rawSearchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
             // Create list of search results
-            List<Listing> listingsSearchResults = new ArrayList<>();
+            List<Listing> searchResults = new ArrayList<>();
+            ObjectMapper objectMapper = new ObjectMapper();
 
-            for (SearchHit hit : searchHits.getHits()) {
-
-                // Retrieve each SearchHit as a Map
-                Map<String, Object> resultMap = hit.getSourceAsMap();
-
-                // Get GeocodeLocation from the map
-                // TODO : try to use mapper
-                Map<String, Double> geoPointParameters = (Map<String, Double>) resultMap.get("location");
-                GeocodeLocation.Builder geoBuilder = new GeocodeLocation.Builder();
-                geoBuilder.latitude(geoPointParameters.get("lat")).longitude(geoPointParameters.get("lon"));
-                GeocodeLocation geoPoint = geoBuilder.build();
-
-                // Build the Listing java object
-                Listing.Builder builder = new Listing.Builder();
-                builder.setGeocodeLocation(geoPoint)
-                       .setPictureUrls(DbUtils.readPictureUrls(resultMap.get("picture_urls").toString()))
-                       .setListingId(resultMap.get("listing_id").toString())
-                       .setTitle(resultMap.get("title").toString())
-                       .setPrice((Double) resultMap.get("price"))
-                       .setCategory(resultMap.get("category").toString())
-                       .setSellerName(resultMap.get("seller_name").toString())
-                       .setBrand(resultMap.get("brand").toString())
-                       .setItemCondition(resultMap.get("item_condition").toString())
-                       .setDescription(resultMap.get("description").toString())
-                       .setAddress(resultMap.get("address").toString())
-                       .setCityAndState(resultMap.get("city_and_state").toString())
-                       .setDate(resultMap.get("date_created").toString());
-
-                Listing item = builder.build();
-
-                listingsSearchResults.add(item);
-
-                // Extra Reading : you may also retrieve each SearchHit as a JSON string
-//                String sourceAsString = hit.getSourceAsString();
-//                JSONObject result = new JSONObject(sourceAsString);
-//                JSONArray rawSearchResults = new JSONArray();
-//                rawSearchResults.put(result);
-            }
+            // Stream results into listingSearchResults
+            Arrays.stream(rawSearchResponse.getHits().getHits()).forEach(hit -> {
+                try {
+                    searchResults
+                            .add(objectMapper.readValue(hit.getSourceAsString(), Listing.class));
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+            });
 
             // Return the responseBody
-            return listingsSearchResults;
+            return searchResults;
         } catch (Exception e) {
             e.printStackTrace();
             throw new ElasticsearchException("Unable to parse search results sent from Elasticsearch");
@@ -171,48 +125,9 @@ public class Elasticsearch {
     // Add listing to the listings index
     public static void addListing(RestHighLevelClient client, Listing listing) throws ElasticsearchException {
         try {
-            // create jsonMap for the listing object
-            XContentBuilder builder = XContentFactory.jsonBuilder();
-            builder.startObject();
-            {
-                // listing_id
-                builder.field("listing_id", listing.getListingId());
-                // title
-                builder.field("title", listing.getTitle());
-                // price
-                builder.field("price", listing.getPrice());
-                // category
-                builder.field("category", listing.getCategory());
-                // seller_name
-                builder.field("seller_name", listing.getSellerName());
-                // brand
-                builder.field("brand", listing.getBrand());
-                // item_condition
-                builder.field("item_condition", listing.getItemCondition());
-                // description
-                builder.field("description", listing.getDescription());
-                // address
-                builder.field("address", listing.getAddress());
-                // city and state
-                builder.field("city_and_state", listing.getCityAndState());
-                // location
-                builder.startObject("location");
-                {
-                    builder.field("lat", listing.getGeocodeLocation().getLatitude());
-                    builder.field("lon", listing.getGeocodeLocation().getLongitude());
-                }
-                builder.endObject();
-                // picture_urls
-                // Elasticsearch arrays do not require a dedicated field data type.
-                // Any field can contain zero or more values by default
-                builder.field("picture_urls", new ObjectMapper().writeValueAsString(listing.getPictureUrls()));
-                // date_created
-                builder.field("date_created", listing.getDate());
-            }
-            builder.endObject();
-
             // Create index request
-            IndexRequest request = new IndexRequest(LISTINGS_INDEX).id(listing.getListingId()).source(builder);
+            IndexRequest request = new IndexRequest(LISTINGS_INDEX).id(listing.getListingId());
+            request.source(new ObjectMapper().writeValueAsString(listing), XContentType.JSON);
             // Execute the request
             client.index(request, RequestOptions.DEFAULT);
 
@@ -226,36 +141,9 @@ public class Elasticsearch {
     public static void updateListing(RestHighLevelClient client, Listing listing) throws ElasticsearchException {
         try {
 
-            // create jsonMap for the updated listing object
-            XContentBuilder builder = XContentFactory.jsonBuilder();
-            builder.startObject();
-            {
-                // listing_id
-                builder.field("listing_id", listing.getListingId());
-                // title
-                builder.field("title", listing.getTitle());
-                // price
-                builder.field("price", listing.getPrice());
-                // category
-                builder.field("category", listing.getCategory());
-                // brand
-                builder.field("brand", listing.getBrand());
-                // item_condition
-                builder.field("item_condition", listing.getItemCondition());
-                // description
-                builder.field("description", listing.getDescription());
-
-                // picture_urls
-                // Elasticsearch arrays do not require a dedicated field data type.
-                // Any field can contain zero or more values by default
-                builder.field("picture_urls", listing.getPictureUrls().toString());
-                // date_created
-                builder.field("date_created", listing.getDate());
-            }
-            builder.endObject();
-
             // Create update request
-            UpdateRequest request = new UpdateRequest(LISTINGS_INDEX, listing.getListingId()).doc(builder);
+            UpdateRequest request = new UpdateRequest(LISTINGS_INDEX, listing.getListingId());
+            request.doc(new ObjectMapper().writeValueAsString(listing), XContentType.JSON);
             // Execute the request
             client.update(request, RequestOptions.DEFAULT);
 

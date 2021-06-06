@@ -23,6 +23,8 @@ public class Listing {
     private String sellerId;
     @JsonProperty("seller_name")
     private String sellerName;
+    @JsonProperty("seller_email")
+    private String sellerEmail;
     @JsonProperty("description")
     private String description;
     @JsonProperty("item_condition")
@@ -47,6 +49,7 @@ public class Listing {
         this.category = builder.category;
         this.sellerId = builder.sellerId;
         this.sellerName = builder.sellerName;
+        this.sellerEmail = builder.sellerEmail;
         this.description = builder.description;
         this.itemCondition = builder.itemCondition;
         this.address = builder.address;
@@ -84,6 +87,10 @@ public class Listing {
         return sellerName;
     }
 
+    public String getSellerEmail() {
+        return sellerEmail;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -119,19 +126,49 @@ public class Listing {
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Builder {
+        @JsonProperty("listing_id")
         private String listingId;
+
+        @JsonProperty("title")
         private String title;
+
+        @JsonProperty("price")
         private double price;
+
+        @JsonProperty("category")
         private String category;
+
+        @JsonProperty("seller_id")
         private String sellerId;
+
+        @JsonProperty("seller_name")
         private String sellerName;
+
+        @JsonProperty("seller_email")
+        private String sellerEmail;
+
+        @JsonProperty("description")
         private String description;
+
+        @JsonProperty("item_condition")
         private String itemCondition;
+
+        @JsonProperty("brand")
         private String brand;
+
+        @JsonProperty("address")
         private String address;
+
+        @JsonProperty("picture_urls")
         private LinkedHashMap<String, String> pictureUrls;
+
+        @JsonProperty("date")
         private String date;
+
+        @JsonProperty("geo_location")
         private GeocodeLocation geocodeLocation;
+
+        @JsonProperty("city_and_state")
         private String cityAndState;
 
         public Builder setListingId(String listingId) {
@@ -162,6 +199,11 @@ public class Listing {
 
         public Builder setSellerName(String sellerName) {
             this.sellerName = sellerName;
+            return this;
+        }
+
+        public Builder setSellerEmail(String sellerEmail) {
+            this.sellerEmail = sellerEmail;
             return this;
         }
 
