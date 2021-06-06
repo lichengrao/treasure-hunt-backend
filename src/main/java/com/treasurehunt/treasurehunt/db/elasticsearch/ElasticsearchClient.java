@@ -14,10 +14,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class ElasticsearchClient {
+class ElasticsearchClient {
     private static final String ELASTIC_SEARCH_ENDPOINT = "34.70.120.75";
 
-    public static RestHighLevelClient createElasticsearchClient() throws IOException {
+    static RestHighLevelClient createElasticsearchClient() throws IOException {
         // Get username and password from properties
         Properties prop = new Properties();
         String propFileName = "config.properties";
