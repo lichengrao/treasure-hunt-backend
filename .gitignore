@@ -15,6 +15,12 @@
 log/
 target/
 
+#log
+*.txt
+/treasurehunt-314717-40eb1793a198.json
+
 # Other
 src/main/resources/
 src/main/webapp/
+
+
