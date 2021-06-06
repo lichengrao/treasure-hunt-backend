@@ -77,6 +77,7 @@ public class ListingServlet extends HttpServlet {
             response.setStatus(500);
             response.getWriter().write("Unable to successfully create listing! Please check the application logs for " +
                     "more details.");
+            return;
         }
 
         // return if cannot find user in user db
@@ -203,6 +204,7 @@ public class ListingServlet extends HttpServlet {
             response.setStatus(500);
             response.getWriter().write("Unable to successfully get listing! Please check the application logs for " +
                     "more details.");
+            return;
         }
 
         // Check if existing seller_id is the same as the seller_id, if not, set unauthorized
@@ -210,6 +212,7 @@ public class ListingServlet extends HttpServlet {
             logger.info("Seller ids do not match {}, {}", sellerId, oldListing.getSellerId());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Unable to edit someone else's listing!");
+            return;
         }
 
         // Delete existing pictures from GCS
@@ -314,6 +317,7 @@ public class ListingServlet extends HttpServlet {
             response.setStatus(500);
             response.getWriter().write("Unable to successfully get listing! Please check the application logs for " +
                     "more details.");
+            return;
         }
 
         // Attempt to delete the listing from MySQL
