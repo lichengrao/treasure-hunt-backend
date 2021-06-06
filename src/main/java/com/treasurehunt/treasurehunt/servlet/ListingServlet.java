@@ -51,7 +51,7 @@ public class ListingServlet extends HttpServlet {
         // Verify the two id's are equal
         if (!authorizedUserId.equals(sellerId)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().print("Token invalid");
+            response.getWriter().print("Invalid token");
             return;
         }
 
@@ -139,7 +139,7 @@ public class ListingServlet extends HttpServlet {
 
         // ListingId is return as the respondBody
         // so no need to serialize Java objects into JSON string
-        response.setStatus(200);
+        response.setStatus(201);
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().print(listingId);
     }
@@ -188,7 +188,7 @@ public class ListingServlet extends HttpServlet {
         // Verify the two id's are equal
         if (!authorizedUserId.equals(sellerId)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().print("Token invalid");
+            response.getWriter().print("Invalid token");
             return;
         }
 

@@ -32,7 +32,7 @@ public class ElasticsearchIndexCreator {
                         }
                         builder.endObject();
 
-                        // title
+                        // price
                         builder.startObject("price");
                         {
                             builder.field("type", "double");

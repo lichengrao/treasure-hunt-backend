@@ -29,7 +29,7 @@ public class SignupServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
             IOException {
 
-        // Reader user data from the request body
+        // Read user data from the request body
         User user = ServletUtil.readRequestBody(User.class, request);
         if (user == null) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -84,5 +84,7 @@ public class SignupServlet extends HttpServlet {
             response.setStatus(HttpServletResponse.SC_CONFLICT);
             response.getWriter().print("user_id taken");
         }
+
+        response.setStatus(201);
     }
 }

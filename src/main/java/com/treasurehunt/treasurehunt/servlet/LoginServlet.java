@@ -60,5 +60,7 @@ public class LoginServlet extends HttpServlet {
         LoginResponseBody loginResponseBody = new LoginResponseBody(token, user.getFirstName());
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().print(new ObjectMapper().writeValueAsString(loginResponseBody));
+
+        response.setStatus(201);
     }
 }
