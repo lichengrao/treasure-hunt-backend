@@ -26,6 +26,8 @@ public class User {
     private String passwordSalt;
     @JsonProperty("geo_location")
     private GeocodeLocation geocodeLocation;
+    @JsonProperty("city_and_state")
+    private String cityAndState;
 
 
     private User(Builder builder) {
@@ -36,7 +38,8 @@ public class User {
         this.email = builder.email;
         this.address = builder.address;
         this.geocodeLocation = builder.geocodeLocation;
-
+        this.passwordSalt = builder.passwordSalt;
+        this.cityAndState = builder.cityAndState;
     }
 
     public String getUserId() {
@@ -91,6 +94,15 @@ public class User {
         return this;
     }
 
+    public String getCityAndState() {
+        return cityAndState;
+    }
+
+    public User setCityAndState(String cityAndState) {
+        this.cityAndState = cityAndState;
+        return this;
+    }
+
     @JsonIgnoreProperties(ignoreUnknown = true)
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Builder {
@@ -99,6 +111,9 @@ public class User {
 
         @JsonProperty("password")
         private String password;
+
+        @JsonProperty("password_salt")
+        private String passwordSalt;
 
         @JsonProperty("first_name")
         private String firstName;
@@ -115,6 +130,9 @@ public class User {
         @JsonProperty("geo_location")
         private GeocodeLocation geocodeLocation;
 
+        @JsonProperty("city_and_state")
+        private String cityAndState;
+
         public Builder userId(String userId) {
             this.userId = userId;
             return this;
@@ -122,6 +140,11 @@ public class User {
 
         public Builder password(String password) {
             this.password = password;
+            return this;
+        }
+
+        public Builder passwordSalt(String passwordSalt) {
+            this.passwordSalt = passwordSalt;
             return this;
         }
 
@@ -149,9 +172,13 @@ public class User {
             return this;
         }
 
-
         public Builder geocodeLocation(GeocodeLocation geocodeLocation) {
             this.geocodeLocation = geocodeLocation;
+            return this;
+        }
+
+        public Builder cityAndState(String cityAndState) {
+            this.cityAndState = cityAndState;
             return this;
         }
 

@@ -3,22 +3,21 @@ package com.treasurehunt.treasurehunt.entity;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class LoginRequestBody {
+public class SaveRequestBody {
     private final String userId;
-    private final String password;
+    private final String listingId;
 
     @JsonCreator
-    public LoginRequestBody(@JsonProperty("user_id") String userId, @JsonProperty("password") String password) {
+    public SaveRequestBody(@JsonProperty("user_id") String userId, @JsonProperty("listing_id") String listingId) {
         this.userId = userId;
-        this.password = password;
+        this.listingId = listingId;
     }
 
     public String getUserId() {
         return userId;
     }
 
-    public String getPassword() {
-        return password;
+    public String getListingId() {
+        return listingId;
     }
 }
-

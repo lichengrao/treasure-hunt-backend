@@ -17,7 +17,9 @@ public class GCS {
         try {
             // Create blobId and blobInfo
             BlobId blobId = BlobId.of(bucketName, pictureId);
-            BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
+            BlobInfo blobInfo = BlobInfo
+                    .newBuilder(blobId)
+                    .build();
 
             // Upload blob into GCS
             Blob blob = storage.createFrom(blobInfo, fileInputStream);

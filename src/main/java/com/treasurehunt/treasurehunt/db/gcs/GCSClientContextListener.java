@@ -23,11 +23,17 @@ public class GCSClientContextListener implements ServletContextListener {
         Properties prop = new Properties();
         String propFileName = "config.properties";
 
-        InputStream inputStream = GCSClientContextListener.class.getClassLoader().getResourceAsStream(propFileName);
+        InputStream inputStream = GCSClientContextListener.class
+                .getClassLoader()
+                .getResourceAsStream(propFileName);
         prop.load(inputStream);
 
         String google_cloud_project_id = prop.getProperty("google_cloud_project_id");
-        return StorageOptions.newBuilder().setProjectId(google_cloud_project_id).build().getService();
+        return StorageOptions
+                .newBuilder()
+                .setProjectId(google_cloud_project_id)
+                .build()
+                .getService();
     }
 
     @Override
