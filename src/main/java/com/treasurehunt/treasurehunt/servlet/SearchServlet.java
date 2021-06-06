@@ -67,7 +67,7 @@ public class SearchServlet extends HttpServlet {
             long interval = Long.parseLong(request.getParameter("time_interval"));
             if (interval < 0) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().println("interval cannot be negative");
+                response.getWriter().println("Interval cannot be negative");
                 return;
             } else {
                 builder.setTimeInterval(interval);
