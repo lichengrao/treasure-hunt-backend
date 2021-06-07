@@ -301,4 +301,18 @@ public class MySQL {
             throw new MySQLException("Failed to find user in users db");
         }
     }
+
+    // After seller deletes an listing, delete all related saved_records
+    public static void deleteAllSavedRecords(Connection conn, String listingId) throws MySQLException {
+
+        try {
+            String sql = String.format("DELETE FROM %s WHERE listing_id = ?", SAVED_RECORDS_DB);
+            PreparedStatement statement = conn.prepareStatement(sql);
+            statement.setString(1, listingId);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new MySQLException("Failed to delete saved records");
+        }
+    }
 }

@@ -323,8 +323,10 @@ public class ListingServlet extends HttpServlet {
         // Attempt to delete the listing from MySQL
         String userId = body.getUserId();
         try (Connection conn = pool.getConnection()) {
-            // delete from MySQL
+            // delete listing from MySQL
             MySQL.deleteListing(conn, userId, listingId);
+            // delete all related saved-records from MySQL
+            MySQL.deleteAllSavedRecords(conn, listingId);
         } catch (SQLException e) {
             logger.warn("Error while attempting to delete listing from MySQL db", e);
             response.setStatus(500);
@@ -334,7 +336,6 @@ public class ListingServlet extends HttpServlet {
         }
 
         // delete from ES
-        // TODO
         RestHighLevelClient elasticsearchClient = (RestHighLevelClient) request.getServletContext()
                                                                                .getAttribute("es-client");
         Elasticsearch.deleteListing(elasticsearchClient, listing);
