@@ -57,7 +57,20 @@ public class Elasticsearch {
             boolBuilder.must(QueryBuilders.multiMatchQuery(requestBody.getKeyword(), "title", "description")
                                           .fuzziness("AUTO"));
             if (requestBody.getCondition() != null) {
-                boolBuilder.filter(QueryBuilders.termQuery("item_condition", requestBody.getCondition()));
+                String queryCondition = requestBody.getCondition();
+                List<String> strings = new ArrayList<>();
+                boolean finished = false;
+                int index = 0;
+                String[] conditions = new String[]{"New", "Used - Like new", "Used - Good", "Used - Fair"};
+                while (!finished && index < conditions.length) {
+                   strings.add(conditions[index]);
+                   if (queryCondition.equals(conditions[index++])) {
+                       finished = true;
+                   }
+                }
+                String[] args = strings.toArray(new String[0]);
+                logger.info("Got condition {} and generated args {}", requestBody.getCondition(), args);
+                boolBuilder.filter(QueryBuilders.termsQuery("item_condition", args));
             }
             if (requestBody.getDistance() != null) {
                 boolBuilder.filter(QueryBuilders.geoDistanceQuery("geo_location")
@@ -73,7 +86,7 @@ public class Elasticsearch {
             if (requestBody.getTmeInterval() != 0) {
                 Instant now = Instant.now();
                 boolBuilder.filter(QueryBuilders.rangeQuery("date")
-                                                .from(now.minus(requestBody.getTmeInterval(), ChronoUnit.HOURS)));
+                                                .from(now.minus(requestBody.getTmeInterval(), ChronoUnit.DAYS)));
             }
             sourceBuilder.query(boolBuilder);
 
