@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonDeserialize(builder = Listing.Builder.class)
+@JsonDeserialize(builder = SearchListingsRequestBody.Builder.class)
 public class SearchListingsRequestBody {
 
     @JsonProperty("keyword")
@@ -20,25 +20,43 @@ public class SearchListingsRequestBody {
     private double latitude;
     @JsonProperty("longitude")
     private double longitude;
-    @JsonProperty("distance")
+    @JsonProperty("radius")
     private String distance;
-    @JsonProperty("maxPrice")
+    @JsonProperty("max_price")
     private double maxPrice;
-    @JsonProperty("minPrice")
+    @JsonProperty("min_price")
     private double minPrice;
-    @JsonProperty("timeInterval")
+    @JsonProperty("time_interval")
     private long timeInterval;
 
-    public SearchListingsRequestBody(Builder builder) {
-        this.keyword = builder.keyword;
-        this.category = builder.category;
-        this.condition = builder.condition;
-        this.longitude = builder.longitude;
-        this.latitude = builder.latitude;
-        this.distance = builder.distance;
-        this.maxPrice = builder.maxPrice;
-        this.minPrice = builder.minPrice;
-        this.timeInterval = builder.timeInterval;
+    private SearchListingsRequestBody(Builder builder) {
+        if (builder.keyword != null) {
+            this.keyword = builder.keyword[0];
+        }
+        if (builder.category != null) {
+            this.category = builder.category[0];
+        }
+        if (builder.condition != null) {
+            this.condition = builder.condition[0];
+        }
+        if (builder.longitude != null) {
+            this.longitude = builder.longitude[0];
+        }
+        if (builder.latitude != null) {
+            this.latitude = builder.latitude[0];
+        }
+        if (builder.distance != null) {
+            this.distance = builder.distance[0];
+        }
+        if (builder.maxPrice != null){
+            this.maxPrice = builder.maxPrice[0];
+        }
+        if (builder.minPrice != null) {
+            this.minPrice = builder.minPrice[0];
+        }
+        if (builder.timeInterval != null) {
+            this.timeInterval = builder.timeInterval[0];
+        }
     }
 
     public SearchListingsRequestBody() {
@@ -76,7 +94,7 @@ public class SearchListingsRequestBody {
         return minPrice;
     }
 
-    public long getTmeInterval() {
+    public long getTimeInterval() {
         return timeInterval;
     }
 
@@ -84,57 +102,66 @@ public class SearchListingsRequestBody {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Builder {
 
-        private String keyword;
-        private String category;
-        private String condition;
-        private double latitude;
-        private double longitude;
-        private String distance;
-        private double maxPrice;
-        private double minPrice;
-        private long timeInterval;
+        @JsonProperty("keyword")
+        private String[] keyword;
+        @JsonProperty("category")
+        private String[] category;
+        @JsonProperty("condition")
+        private String[] condition;
+        @JsonProperty("latitude")
+        private double[] latitude;
+        @JsonProperty("longitude")
+        private double[] longitude;
+        @JsonProperty("radius")
+        private String[] distance;
+        @JsonProperty("max_price")
+        private double[] maxPrice;
+        @JsonProperty("min_price")
+        private double[] minPrice;
+        @JsonProperty("time_interval")
+        private long[] timeInterval;
 
-        public Builder setKeyword(String keyword) {
+        public Builder setKeyword(String[] keyword) {
             this.keyword = keyword;
             return this;
         }
 
-        public Builder setCategory(String category) {
+        public Builder setCategory(String[] category) {
             this.category = category;
             return this;
         }
 
-        public Builder setCondition(String condition) {
+        public Builder setCondition(String[] condition) {
             this.condition = condition;
             return this;
         }
 
-        public Builder setLatitude(double latitude) {
+        public Builder setLatitude(double[] latitude) {
             this.latitude = latitude;
             return this;
         }
 
-        public Builder setLongitude(double longitude) {
+        public Builder setLongitude(double[] longitude) {
             this.longitude = longitude;
             return this;
         }
 
-        public Builder setTimeInterval(long timeInterval) {
+        public Builder setTimeInterval(long[] timeInterval) {
             this.timeInterval = timeInterval;
             return this;
         }
 
-        public Builder setDistance(String distance) {
+        public Builder setDistance(String[] distance) {
             this.distance = distance;
             return this;
         }
 
-        public Builder setMaxPrice(double maxPrice) {
+        public Builder setMaxPrice(double[] maxPrice) {
             this.maxPrice = maxPrice;
             return this;
         }
 
-        public Builder setMinPrice(double minPrice) {
+        public Builder setMinPrice(double[] minPrice) {
             this.minPrice = minPrice;
             return this;
         }

@@ -55,7 +55,7 @@ public class Elasticsearch {
 
             // Fuzzy searches keyword in title and description fields
             boolBuilder.must(QueryBuilders.multiMatchQuery(requestBody.getKeyword(), "title", "description")
-                                          .fuzziness("AUTO"));
+                                          .fuzziness("AUTO:3,5"));
             if (requestBody.getCondition() != null) {
                 String queryCondition = requestBody.getCondition();
                 List<String> strings = new ArrayList<>();
@@ -83,10 +83,10 @@ public class Elasticsearch {
             if (requestBody.getMinPrice() != 0.0) {
                 boolBuilder.filter(QueryBuilders.rangeQuery("price").gte(requestBody.getMinPrice()));
             }
-            if (requestBody.getTmeInterval() != 0) {
+            if (requestBody.getTimeInterval() != 0) {
                 Instant now = Instant.now();
                 boolBuilder.filter(QueryBuilders.rangeQuery("date")
-                                                .from(now.minus(requestBody.getTmeInterval(), ChronoUnit.DAYS)));
+                                                .from(now.minus(requestBody.getTimeInterval(), ChronoUnit.DAYS)));
             }
             sourceBuilder.query(boolBuilder);
 

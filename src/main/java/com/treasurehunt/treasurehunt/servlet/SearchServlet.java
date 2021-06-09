@@ -30,55 +30,60 @@ public class SearchServlet extends HttpServlet {
 
         // Two search mode:
         // 1. keyword associated with filters; 2. category without filters
-        String keyword = request.getParameter("keyword");
-        if (keyword != null) {
-            // Retrieve all filters from request url
-            builder.setKeyword(keyword);
-        }
+        ObjectMapper objectMapper = new ObjectMapper();
 
-        if (request.getParameter("radius") != null && request.getParameter("latitude") != null && request
-                .getParameter("longitude") != null) {
-            builder.setLatitude(Double.parseDouble(request.getParameter("latitude")))
-                   .setLongitude(Double.parseDouble(request.getParameter("longitude")))
-                   .setDistance(request.getParameter("radius"));
-        }
+        logger.info("Received parameters {}", objectMapper.writeValueAsString(request.getParameterMap()));
+        SearchListingsRequestBody requestBody = objectMapper
+                .convertValue(request.getParameterMap(), SearchListingsRequestBody.class);
+        logger.info("Converted params to class {}", objectMapper.writeValueAsString(requestBody));
 
-        if (request.getParameter("condition") != null) {
-            builder.setCondition(request.getParameter("condition"));
-        }
 
-        if (request.getParameter("max_price") != null) {
-            double max = Double.parseDouble(request.getParameter("max_price"));
-            if (max < 0.0) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().println("price cannot be negative");
-                return;
-            } else {
-                builder.setMaxPrice(max);
-            }
-        }
-
-        if (request.getParameter("min_price") != null) {
-            double min = Double.parseDouble(request.getParameter("min_price"));
-            builder.setMinPrice(min);
-        }
-
-        if (request.getParameter("time_interval") != null) {
-            long interval = Long.parseLong(request.getParameter("time_interval"));
-            if (interval < 0) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().println("Interval cannot be negative");
-                return;
-            } else {
-                builder.setTimeInterval(interval);
-            }
-        }
-
-        if (request.getParameter("category") != null) {
-            builder.setCategory(request.getParameter("category"));
-        }
-
-        SearchListingsRequestBody requestBody = builder.build();
+//        if (keyword != null) {
+//            // Retrieve all filters from request url
+//            builder.setKeyword(keyword);
+//        }
+//
+//        if (request.getParameter("radius") != null && request.getParameter("latitude") != null && request
+//                .getParameter("longitude") != null) {
+//            builder.setLatitude(Double.parseDouble(request.getParameter("latitude")))
+//                   .setLongitude(Double.parseDouble(request.getParameter("longitude")))
+//                   .setDistance(request.getParameter("radius"));
+//        }
+//
+//        if (request.getParameter("condition") != null) {
+//            builder.setCondition(request.getParameter("condition"));
+//        }
+//
+//        if (request.getParameter("max_price") != null) {
+//            double max = Double.parseDouble(request.getParameter("max_price"));
+//            if (max < 0.0) {
+//                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+//                response.getWriter().println("price cannot be negative");
+//                return;
+//            } else {
+//                builder.setMaxPrice(max);
+//            }
+//        }
+//
+//        if (request.getParameter("min_price") != null) {
+//            double min = Double.parseDouble(request.getParameter("min_price"));
+//            builder.setMinPrice(min);
+//        }
+//
+//        if (request.getParameter("time_interval") != null) {
+//            long interval = Long.parseLong(request.getParameter("time_interval"));
+//            if (interval < 0) {
+//                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+//                response.getWriter().println("Interval cannot be negative");
+//                return;
+//            } else {
+//                builder.setTimeInterval(interval);
+//            }
+//        }
+//
+//        if (request.getParameter("category") != null) {
+//            builder.setCategory(request.getParameter("category"));
+//        }
 
         // Get search results
         RestHighLevelClient client = (RestHighLevelClient) request.getServletContext().getAttribute("es-client");
