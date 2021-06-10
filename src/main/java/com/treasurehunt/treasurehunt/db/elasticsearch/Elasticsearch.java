@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.treasurehunt.treasurehunt.entity.Listing;
 import com.treasurehunt.treasurehunt.entity.SearchListingsRequestBody;
+import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
@@ -56,8 +57,12 @@ public class Elasticsearch {
         if (requestBody.getKeyword() != null && !requestBody.getKeyword().trim().equals("")) {
             // Fuzzy searches keyword in title and description fields
             String keyword = requestBody.getKeyword();
-            boolBuilder.should(QueryBuilders.matchQuery("title", keyword).fuzziness("AUTO"));
-            boolBuilder.should(QueryBuilders.multiMatchQuery(keyword, "brand", "category", "description"));
+            BoolQueryBuilder keywordQuery = QueryBuilders.boolQuery();
+            keywordQuery.should(QueryBuilders.matchQuery("title", keyword).fuzziness("AUTO"));
+            keywordQuery
+                    .should(QueryBuilders.matchQuery("category", StringUtils.capitalize(keyword)).fuzziness("AUTO"));
+            keywordQuery.should(QueryBuilders.multiMatchQuery(keyword, "brand", "description"));
+            boolBuilder.must(keywordQuery);
             changed = true;
         }
 
